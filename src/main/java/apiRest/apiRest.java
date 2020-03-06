@@ -34,7 +34,7 @@ public class apiRest extends AbstractVerticle {
 	}
 
 	private void createSomeData() {
-		Led light1 = new Led(0, 0, 0);
+		Led light1 = new Led(0, 0, 0);//foo
 		elements.put(light1.getId(), light1);
 		Led light2 = new Led(1, 50, 0);
 		elements.put(light2.getId(), light2);

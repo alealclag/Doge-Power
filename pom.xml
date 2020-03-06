@@ -4,7 +4,7 @@
   <artifactId>Doge_Power_id</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <dependencies>
-  	<!-- https://mvnrepository.com/artifact/io.vertx/vertx-core -->
+  	<!-- https://mvnrepository.com/artifact/io.vertx/vertx-core f-->
 	<dependency>
     	<groupId>io.vertx</groupId>
     	<artifactId>vertx-core</artifactId>
