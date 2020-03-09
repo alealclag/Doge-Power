@@ -1,13 +1,17 @@
 package types;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class Pressure {
+	
+	private static final AtomicInteger COUNTER=new AtomicInteger();
 	
 	int id;
 	int value;
 	long timestamp;
-	public Pressure(int id, int value, long timestamp) {
+	public Pressure(int value, long timestamp) {
 		super();
-		this.id = id;
+		this.setId(COUNTER.getAndIncrement());
 		this.value = value;
 		this.timestamp = timestamp;
 	}

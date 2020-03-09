@@ -1,16 +1,20 @@
 package types;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class Sound {
 
+	private static final AtomicInteger COUNTER=new AtomicInteger();
+	
 	int id;
 	int decibels;
 	long timestamp;
 	
 	
 	
-	public Sound(int id, int decibels, long timestamp) {
+	public Sound(int decibels, long timestamp) {
 		super();
-		this.id = id;
+		this.setId(COUNTER.getAndIncrement());
 		this.decibels = decibels;
 		this.timestamp = timestamp;
 	}

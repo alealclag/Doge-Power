@@ -1,7 +1,11 @@
 package types;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class Location {
 
+	private static final AtomicInteger COUNTER=new AtomicInteger();
+	
 	int id;
 	float x;
 	float y;
@@ -11,9 +15,9 @@ public class Location {
 	
 	
 	
-	public Location(int id, float x, float y, Boolean isInside, Boolean isNearDoor, long timestamp) {
+	public Location(float x, float y, Boolean isInside, Boolean isNearDoor, long timestamp) {
 		super();
-		this.id = id;
+		this.setId(COUNTER.getAndIncrement());
 		this.x = x;
 		this.y = y;
 		this.isInside = isInside;

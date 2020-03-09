@@ -7,7 +7,7 @@ public class Led {
 	
 	private static final AtomicInteger COUNTER=new AtomicInteger();
 	
-	int id;//foo
+	int id;
 	int mode;
 	float luminosity;
 	float length;

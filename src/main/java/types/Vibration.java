@@ -1,6 +1,10 @@
 package types;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class Vibration {
+	
+	private static final AtomicInteger COUNTER=new AtomicInteger();
 	
 	int id;
 	int mode;
@@ -10,12 +14,20 @@ public class Vibration {
 	
 	
 	
-	public Vibration(int id, int mode, float intensity, float length, long timestamp) {
+	public Vibration(int mode, float intensity, float length, long timestamp) {
 		super();
-		this.id = id;
+		this.setId(COUNTER.getAndIncrement());
 		this.mode = mode;
-		this.intensity = intensity;
-		this.length = length;
+		if(mode==0) {
+			this.intensity = 0;
+			this.length = 0;
+		}else if(mode==1){
+			this.intensity = intensity;
+			this.length = 0;
+		}else {
+			this.intensity = intensity;
+			this.length = length;
+		}
 		this.timestamp = timestamp;
 	}
 	public int getId() {
