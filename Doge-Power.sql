@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.19, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: doge power
+-- Host: 127.0.0.1    Database: doge-power
 -- ------------------------------------------------------
 -- Server version	8.0.19
 
@@ -115,7 +115,7 @@ CREATE TABLE `sensor` (
   PRIMARY KEY (`idsensor`),
   KEY `device_sensor_device_idx` (`iddevice`),
   CONSTRAINT `device_sensor_device` FOREIGN KEY (`iddevice`) REFERENCES `device` (`iddevice`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -124,7 +124,7 @@ CREATE TABLE `sensor` (
 
 LOCK TABLES `sensor` WRITE;
 /*!40000 ALTER TABLE `sensor` DISABLE KEYS */;
-INSERT INTO `sensor` VALUES (1,'Location',1,'Location'),(2,'Basic',1,'Pressure'),(3,'Basic',1,'Sound'),(4,'Location',2,'Location'),(5,'Basic',2,'Pressure'),(6,'Basic',2,'Sound'),(7,'Location',3,'Location'),(8,'Basic',3,'Pressure'),(9,'Basic',3,'Sound'),(10,'Location',4,'Location'),(11,'Basic',4,'Pressure'),(12,'Basic',4,'Sound'),(13,'Location',5,'Location'),(14,'Basic',5,'Pressure'),(15,'Basic',5,'Sound');
+INSERT INTO `sensor` VALUES (1,'Location',1,'Location'),(2,'Basic',1,'Pressure'),(3,'Basic',1,'Sound'),(4,'Location',2,'Location'),(5,'Basic',2,'Pressure'),(6,'Basic',2,'Sound'),(7,'Location',3,'Location'),(8,'Basic',3,'Pressure'),(9,'Basic',3,'Sound'),(10,'Location',4,'Location'),(11,'Basic',4,'Pressure'),(12,'Basic',4,'Sound'),(13,'Location',5,'Location'),(14,'Basic',5,'Pressure'),(15,'Basic',5,'Sound'),(39,'Distance',1,'Distance'),(40,'Distance',2,'Distance'),(41,'Distance',3,'Distance'),(42,'Distance',4,'Distance'),(43,'Distance',5,'Distance');
 /*!40000 ALTER TABLE `sensor` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -157,6 +157,35 @@ INSERT INTO `sensor_value_basic` VALUES (1,50,123456789012,2),(2,40,123456789012
 UNLOCK TABLES;
 
 --
+-- Table structure for table `sensor_value_distance`
+--
+
+DROP TABLE IF EXISTS `sensor_value_distance`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sensor_value_distance` (
+  `idsensor_value_distance` int NOT NULL AUTO_INCREMENT,
+  `distance_to_door` float NOT NULL,
+  `is_Inside` tinyint NOT NULL,
+  `idsensor` int NOT NULL,
+  `timestamp` bigint NOT NULL,
+  PRIMARY KEY (`idsensor_value_distance`),
+  KEY `sensor_distance_sensor_idx` (`idsensor`),
+  CONSTRAINT `sensor_distance_sensor` FOREIGN KEY (`idsensor`) REFERENCES `sensor` (`idsensor`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sensor_value_distance`
+--
+
+LOCK TABLES `sensor_value_distance` WRITE;
+/*!40000 ALTER TABLE `sensor_value_distance` DISABLE KEYS */;
+INSERT INTO `sensor_value_distance` VALUES (1,1,1,1,123456789012),(2,0.5,1,2,123456789012),(3,0.2,0,3,123456789012),(4,3,1,4,123456789012),(5,3.5,1,5,123456789012);
+/*!40000 ALTER TABLE `sensor_value_distance` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `sensor_value_location`
 --
 
@@ -168,8 +197,6 @@ CREATE TABLE `sensor_value_location` (
   `value_x` float NOT NULL,
   `value_y` float NOT NULL,
   `timestamp` bigint NOT NULL,
-  `isInside` tinyint NOT NULL,
-  `distance_to_door` float NOT NULL,
   `idsensor` int NOT NULL,
   PRIMARY KEY (`idsensor_value_location`),
   KEY `sensor_sensor_value_location_sensor_idx` (`idsensor`),
@@ -183,7 +210,7 @@ CREATE TABLE `sensor_value_location` (
 
 LOCK TABLES `sensor_value_location` WRITE;
 /*!40000 ALTER TABLE `sensor_value_location` DISABLE KEYS */;
-INSERT INTO `sensor_value_location` VALUES (1,38,-5,123456789012,1,1,1),(2,50,-10,123456789012,1,0.5,4),(3,60,30,123456789012,0,2,7),(4,0,0,123456789012,1,2.5,10),(5,25,25,123456789012,0,3,13);
+INSERT INTO `sensor_value_location` VALUES (1,38,-5,123456789012,1),(2,50,-10,123456789012,4),(3,60,30,123456789012,7),(4,0,0,123456789012,10),(5,25,25,123456789012,13);
 /*!40000 ALTER TABLE `sensor_value_location` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -223,4 +250,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-03-24 19:29:04
+-- Dump completed on 2020-03-26 18:13:13
