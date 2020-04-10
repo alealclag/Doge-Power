@@ -1,17 +1,14 @@
 package types;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class Pressure {
 	
-	private static final AtomicInteger COUNTER=new AtomicInteger();
+	Integer id;
+	Float value;
+	Long timestamp;
 	
-	int id;
-	int value;
-	long timestamp;
-	public Pressure(int value, long timestamp) {
+	public Pressure(Integer id, Float value, Long timestamp) {
 		super();
-		this.setId(COUNTER.getAndIncrement());
+		this.id = id;
 		this.value = value;
 		this.timestamp = timestamp;
 	}
@@ -21,25 +18,25 @@ public class Pressure {
 	public void setId(int id) {
 		this.id = id;
 	}
-	public int getValue() {
+	public Float getValue() {
 		return value;
 	}
-	public void setValue(int value) {
+	public void setValue(Float value) {
 		this.value = value;
 	}
 	public long getTimestamp() {
 		return timestamp;
 	}
-	public void setTimestamp(long timestamp) {
+	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + id;
-		result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
-		result = prime * result + value;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
 	@Override
@@ -51,15 +48,23 @@ public class Pressure {
 		if (getClass() != obj.getClass())
 			return false;
 		Pressure other = (Pressure) obj;
-		if (id != other.id)
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
-		if (timestamp != other.timestamp)
+		if (timestamp == null) {
+			if (other.timestamp != null)
+				return false;
+		} else if (!timestamp.equals(other.timestamp))
 			return false;
-		if (value != other.value)
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
 			return false;
 		return true;
 	}
-	
 	
 	
 }

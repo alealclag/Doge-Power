@@ -1,50 +1,52 @@
 package types;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class Sound {
 
-	private static final AtomicInteger COUNTER=new AtomicInteger();
+	Integer id;
+	Float decibels;
+	Long timestamp;
 	
-	int id;
-	int decibels;
-	long timestamp;
-	
-	
-	
-	public Sound(int decibels, long timestamp) {
+	public Sound(Integer id, Float decibels, Long timestamp) {
 		super();
-		this.setId(COUNTER.getAndIncrement());
+		this.id = id;
 		this.decibels = decibels;
 		this.timestamp = timestamp;
 	}
-	public int getId() {
+
+	public Integer getId() {
 		return id;
 	}
-	public void setId(int id) {
+
+	public void setId(Integer id) {
 		this.id = id;
 	}
-	public int getDecibels() {
+
+	public Float getDecibels() {
 		return decibels;
 	}
-	public void setDecibels(int decibels) {
+
+	public void setDecibels(Float decibels) {
 		this.decibels = decibels;
 	}
-	public long getTimestamp() {
+
+	public Long getTimestamp() {
 		return timestamp;
 	}
-	public void setTimestamp(long timestamp) {
+
+	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + decibels;
-		result = prime * result + id;
-		result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
+		result = prime * result + ((decibels == null) ? 0 : decibels.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -54,15 +56,22 @@ public class Sound {
 		if (getClass() != obj.getClass())
 			return false;
 		Sound other = (Sound) obj;
-		if (decibels != other.decibels)
+		if (decibels == null) {
+			if (other.decibels != null)
+				return false;
+		} else if (!decibels.equals(other.decibels))
 			return false;
-		if (id != other.id)
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
-		if (timestamp != other.timestamp)
+		if (timestamp == null) {
+			if (other.timestamp != null)
+				return false;
+		} else if (!timestamp.equals(other.timestamp))
 			return false;
 		return true;
-	}
-	
-	
+	}	
 	
 }
