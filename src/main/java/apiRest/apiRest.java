@@ -9,7 +9,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import types.Led;
-
+//eclipse ya funciona
+//de hecho esta es la segunda prueba que hago
 public class apiRest extends AbstractVerticle {
 
 	private Map<Integer, Led> elements = new LinkedHashMap<>();
