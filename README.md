@@ -66,10 +66,12 @@ En caso de disponer del suficiente tiempo, se tratará de implementar una app pa
 
 ### **Base de datos**
 
-![](https://raw.githubusercontent.com/alealclag/Doge-Power/master/Doge-power%20Diagrama%20UML.png)
+![](Doge-power Diagrama UML.png)
 
 La base de datos diseñada para nuestro proyecto es relativamente simple, puesto que la única información que almacenaremos será la de los usuarios, dispositivos, sensores y actuadores. Para ello, hemos creado una tabla para cada uno, excepto para los dos últimos, que presentan tablas para la información del sensor/actuador, y por separado tablas para los valores. Estos, por regla general, solo precisan del id del sensor, el valor y el timestamp, pero luego existen otros distintos, como es por ejemplo la ubicación, que precisa de dos coordenadas, además de otras extras. El resultado es el siguiente diagrama UML:
 
  
 
+
 Para casi todas las tablas hemos usado solo atributos básicos con el objetivo de obtener una base de datos simple y que no nos lleve una gran cantidad de tiempo trabajar con ella. Como hemos indicado anteriormente, para sensor y actuator tenemos atributos tales como el dispositivo al que pertenecen, el nombre del sensor/actuador (pressure, led, etc.) y el tipo. Con el tipo nos referimos a si es básico (sensor/actuador, valor y timestamp) o no, que en nuestro caso son el tipo Location, ya que estos sensores recogen el valor de las coordenadas en x e y, y Distance, que además de recoger el valor de la distancia, también recoge si el dispositivo se encuentra dentro o fuera de la zona, que suele ser una casa, de ahí el nombre del atributo “distance_to_door”.
+
