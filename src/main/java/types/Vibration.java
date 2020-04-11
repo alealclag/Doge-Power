@@ -8,7 +8,7 @@ public class Vibration {
 	float length;
 	long timestamp;
 	
-	
+
 	
 	public Vibration(int id, int mode, float intensity, float length, long timestamp) {
 		super();
