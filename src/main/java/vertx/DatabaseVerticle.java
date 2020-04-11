@@ -33,125 +33,410 @@ public class DatabaseVerticle extends AbstractVerticle{
 			}
 		});
 
-		router.get("/api/sensor/values/:idSensor").handler(this::getSensorValues);
-
-
+		router.get("/api/user/:idUser").handler(this::getUserInfo);
+		router.get("/api/devicesOf/:idUser").handler(this::getDeviceInfoByUser);
+		router.get("/api/device/:idDevice").handler(this::getDeviceInfo);
 		
+		router.get("/api/sensor/values/:idSensor/:timestamp").handler(this::getSensorValues);
+		router.get("/api/sensor/values/:idSensor").handler(this::getSensorValues);
+		//router.get("/api/sensorsOf/values/:idDevice").handler(this::getSensorValuesByDevice);
+		
+		router.get("/api/actuator/values/:idActuator/:timestamp").handler(this::getActuatorValues);
+		router.get("/api/actuator/values/:idActuator").handler(this::getActuatorValues);
+		
+		
+	
 	}
 
-	private void getSensorValues(RoutingContext routingContext) {
-
-		mySQLPool.query("SELECT * FROM sensor WHERE idsensor = " + routingContext.request().getParam("idSensor"), 
+	private void getUserInfo(RoutingContext routingContext) {
+		mySQLPool.query("SELECT * FROM user WHERE iduser = " + routingContext.request().getParam("idUser"), 
 				res -> {
-					if (res.succeeded()) {
-						
+					if (res.succeeded()) {	
 						RowSet<Row> resultSet = res.result();
 						System.out.println("El número de elementos obtenidos es " + resultSet.size());
+						JsonArray result = new JsonArray();
+						
 						for (Row row : resultSet) {
-							switch(row.getString("name")) {
-							case "Location":
-								mySQLPool.query("SELECT * FROM sensor_value_location WHERE idsensor = " + routingContext.request().getParam("idSensor"), 
-										resAux -> {
-											
-											if (resAux.succeeded()) {
-												
-												RowSet<Row> resultSetAux = resAux.result();
-												System.out.println("El número de elementos obtenidos es " + resultSetAux.size());
-												JsonArray resultAux = new JsonArray();
-												
-												for (Row rowAux : resultSetAux) {
-													
-													resultAux.add(JsonObject.mapFrom(new Location(rowAux.getInteger("idsensor"),
-															rowAux.getFloat("value_x"),
-															rowAux.getFloat("value_y"),
-															rowAux.getLong("timestamp"))));
-												}
-												routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-												.end(resultAux.encodePrettily());
-												}else {
-													routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
-													.end((JsonObject.mapFrom(resAux.cause()).encodePrettily()));
-											}
-										});break;
-								
-							case "Pressure":
-								mySQLPool.query("SELECT * FROM sensor_value_basic WHERE idsensor = " + routingContext.request().getParam("idSensor"), 
-										resAux -> {
-											
-											if (resAux.succeeded()) {
-												
-												RowSet<Row> resultSetAux = resAux.result();
-												System.out.println("El número de elementos obtenidos es " + resultSetAux.size());
-												JsonArray resultAux = new JsonArray();
-												
-												for (Row rowAux : resultSetAux) {	
-													resultAux.add(JsonObject.mapFrom(new Pressure(rowAux.getInteger("idsensor"),
-															rowAux.getFloat("value"),
-															rowAux.getLong("timestamp"))));
-												}
-												routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-												.end(resultAux.encodePrettily());
-												}else {
-													routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
-													.end((JsonObject.mapFrom(resAux.cause()).encodePrettily()));
-											}
-										});break;
-							case "Sound":
-								mySQLPool.query("SELECT * FROM sensor_value_basic WHERE idsensor = " + routingContext.request().getParam("idSensor"), 
-										resAux -> {
-											
-											if (resAux.succeeded()) {
-												
-												RowSet<Row> resultSetAux = resAux.result();
-												System.out.println("El número de elementos obtenidos es " + resultSetAux.size());
-												JsonArray resultAux = new JsonArray();
-												
-												for (Row rowAux : resultSetAux) {
-													resultAux.add(JsonObject.mapFrom(new Sound(rowAux.getInteger("idsensor"),
-															rowAux.getFloat("value"),
-															rowAux.getLong("timestamp"))));
-												}
-												routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-												.end(resultAux.encodePrettily());
-												}else {
-													routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
-													.end((JsonObject.mapFrom(resAux.cause()).encodePrettily()));
-											}
-										});break;
-							case "Distance":
-								mySQLPool.query("SELECT * FROM sensor_value_distance WHERE idsensor = " + routingContext.request().getParam("idSensor"), 
-										resAux -> {
-											
-											if (resAux.succeeded()) {
-												
-												RowSet<Row> resultSetAux = resAux.result();
-												System.out.println("El número de elementos obtenidos es " + resultSetAux.size());
-												JsonArray resultAux = new JsonArray();
-												
-												for (Row rowAux : resultSetAux) {
-													resultAux.add(JsonObject.mapFrom(new Distance(rowAux.getInteger("idsensor"),
-															rowAux.getFloat("distance_to_door"),
-															rowAux.getBoolean("isInside"),
-															rowAux.getLong("timestamp"))));
-												}
-												routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-												.end(resultAux.encodePrettily());
-												}else {
-													routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
-													.end((JsonObject.mapFrom(resAux.cause()).encodePrettily()));
-											}
-										});break;
-							}
+							result.add(JsonObject.mapFrom(new User(row.getInteger("iduser"),
+									row.getString("name"),
+									row.getString("password"),
+									row.getLong("birthdate"),
+									row.getString("city"))));
 							
 						}
-						
-						
-					}else {
-						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+						.end(result.encodePrettily());
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
 					}
 				});
 	}
 	
+	private void getDeviceInfo(RoutingContext routingContext) {
+		mySQLPool.query("SELECT * FROM device WHERE iddevice = " + routingContext.request().getParam("idDevice"), 
+				res -> {
+					if (res.succeeded()) {	
+						RowSet<Row> resultSet = res.result();
+						System.out.println("El número de elementos obtenidos es " + resultSet.size());
+						JsonArray result = new JsonArray();
+						
+						for (Row row : resultSet) {
+							result.add(JsonObject.mapFrom(new Device(row.getInteger("iddevice"),
+									row.getString("dog"))));
+						}
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+						.end(result.encodePrettily());
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+					}
+				});
+	}
+
+	private void getDeviceInfoByUser(RoutingContext routingContext) {
+		mySQLPool.query("SELECT * FROM device WHERE iduser = " + routingContext.request().getParam("idUser"), 
+				res -> {
+					if (res.succeeded()) {	
+						RowSet<Row> resultSet = res.result();
+						System.out.println("El número de elementos obtenidos es " + resultSet.size());
+						JsonArray result = new JsonArray();
+						
+						for (Row row : resultSet) {
+							result.add(JsonObject.mapFrom(new Device(row.getInteger("iddevice"),
+									row.getString("dog"))));
+						}
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+						.end(result.encodePrettily());
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+					}
+				});
+	}
+	
+	private void getSensorValues(RoutingContext routingContext) {
+		mySQLPool.query("SELECT * FROM sensor WHERE idsensor = " + routingContext.request().getParam("idSensor"), 
+				res -> {
+					if (res.succeeded()) {	
+						RowSet<Row> resultSet = res.result();
+						System.out.println("El número de elementos obtenidos es " + resultSet.size());
+						for (Row row : resultSet) {
+							switch(row.getString("name")) {
+								case "Location":
+									getLocation(routingContext, -1);break;
+								
+								case "Pressure":
+									getPressure(routingContext, -1);break;
+									
+								case "Sound":
+									getSound(routingContext, -1);break;
+									
+								case "Distance":
+									getDistance(routingContext, -1);break;
+							}
+						}
+					}else{
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+					}
+				});
+	}
+
+	private void getLocation(RoutingContext routingContext, int idSensor) {
+		String query;
+		if(routingContext.request().getParam("timestamp")==null) {
+			if(idSensor==-1) {
+				query="SELECT * FROM sensor_value_location WHERE idsensor = "
+						+ routingContext.request().getParam("idSensor");
+			}else {
+				query="SELECT * FROM sensor_value_location WHERE idsensor = " + idSensor;
+			}
+			
+		}else {
+			if(idSensor==-1) {
+			query="SELECT * FROM sensor_value_location WHERE timestamp > "
+					+ routingContext.request().getParam("timestamp") + " AND idsensor = "
+					+ routingContext.request().getParam("idSensor");
+			}else {
+				query="SELECT * FROM sensor_value_location WHERE timestamp > "
+						+ routingContext.request().getParam("timestamp") + " AND idsensor = "
+						+ idSensor;
+			}
+		}
+		mySQLPool.query(query, res -> {
+				if (res.succeeded()) {
+					
+					RowSet<Row> resultSet = res.result();
+					System.out.println("aEl número de elementos obtenidos es " + resultSet.size());
+					JsonArray result = new JsonArray();
+					
+					for (Row row : resultSet) {
+						
+						result.add(JsonObject.mapFrom(new Location(row.getInteger("idsensor"),
+								row.getFloat("value_x"),
+								row.getFloat("value_y"),
+								row.getLong("timestamp"))));
+					}
+					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+					.end(result.encodePrettily());
+					}else {
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+						.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+				}
+			});
+	}
+	
+	private void getPressure(RoutingContext routingContext, int idSensor) {
+		String query;
+		if(routingContext.request().getParam("timestamp")==null) {
+			if(idSensor==-1) {
+				query="SELECT * FROM sensor_value_basic WHERE idsensor = "
+						+ routingContext.request().getParam("idSensor");
+			}else {
+				query="SELECT * FROM sensor_value_basic WHERE idsensor = " + idSensor;
+			}
+			
+		}else {
+			if(idSensor==-1) {
+			query="SELECT * FROM sensor_value_basic WHERE timestamp > "
+					+ routingContext.request().getParam("timestamp") + " AND idsensor = "
+					+ routingContext.request().getParam("idSensor");
+			}else {
+				query="SELECT * FROM sensor_value_basic WHERE timestamp > "
+						+ routingContext.request().getParam("timestamp") + " AND idsensor = "
+						+ idSensor;
+			}
+		}
+		mySQLPool.query(query, res -> {
+				if (res.succeeded()) {
+							
+					RowSet<Row> resultSet = res.result();
+					System.out.println("bEl número de elementos obtenidos es " + resultSet.size());
+					JsonArray result = new JsonArray();
+							
+					for (Row row : resultSet) {
+								
+						result.add(JsonObject.mapFrom(new Pressure(row.getInteger("idsensor"),
+								row.getFloat("value"),
+								row.getLong("timestamp"))));
+					}
+					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+						.end(result.encodePrettily());
+				}else {
+					routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+						.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+				}
+			});
+	}
+	
+	private void getSound(RoutingContext routingContext, int idSensor) {
+		String query;
+		if(routingContext.request().getParam("timestamp")==null) {
+			if(idSensor==-1) {
+				query="SELECT * FROM sensor_value_basic WHERE idsensor = "
+						+ routingContext.request().getParam("idSensor");
+			}else {
+				query="SELECT * FROM sensor_value_basic WHERE idsensor = " + idSensor;
+			}
+			
+		}else {
+			if(idSensor==-1) {
+			query="SELECT * FROM sensor_value_basic WHERE timestamp > "
+					+ routingContext.request().getParam("timestamp") + " AND idsensor = "
+					+ routingContext.request().getParam("idSensor");
+			}else {
+				query="SELECT * FROM sensor_value_basic WHERE timestamp > "
+						+ routingContext.request().getParam("timestamp") + " AND idsensor = "
+						+ idSensor;
+			}
+		}
+		mySQLPool.query(query, res -> {
+				if (res.succeeded()) {
+
+					RowSet<Row> resultSet = res.result();
+					System.out.println("cEl número de elementos obtenidos es " + resultSet.size());
+					JsonArray result = new JsonArray();
+
+					for (Row row : resultSet) {
+
+						result.add(JsonObject.mapFrom(new Sound(row.getInteger("idsensor"),
+								row.getFloat("value"),
+								row.getLong("timestamp"))));
+					}
+					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+					.end(result.encodePrettily());
+					}else {
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+						.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+				}
+			});
+	}
+	
+	private void getDistance(RoutingContext routingContext, int idSensor) {
+		String query;
+		if(routingContext.request().getParam("timestamp")==null) {
+			if(idSensor==-1) {
+				query="SELECT * FROM sensor_value_distance WHERE idsensor = "
+						+ routingContext.request().getParam("idSensor");
+			}else {
+				query="SELECT * FROM sensor_value_distance WHERE idsensor = " + idSensor;
+			}
+			
+		}else {
+			if(idSensor==-1) {
+			query="SELECT * FROM sensor_value_distance WHERE timestamp > "
+					+ routingContext.request().getParam("timestamp") + " AND idsensor = "
+					+ routingContext.request().getParam("idSensor");
+			}else {
+				query="SELECT * FROM sensor_value_distance WHERE timestamp > "
+						+ routingContext.request().getParam("timestamp") + " AND idsensor = "
+						+ idSensor;
+			}
+		}
+		mySQLPool.query(query, res -> {
+				if (res.succeeded()) {
+					
+					RowSet<Row> resultSet = res.result();
+					System.out.println("dEl número de elementos obtenidos es " + resultSet.size());
+					JsonArray result = new JsonArray();
+					
+					for (Row row : resultSet) {
+						
+						result.add(JsonObject.mapFrom(new Distance(row.getInteger("idsensor"),
+								row.getFloat("distance_to_door"),
+								row.getBoolean("isInside"),
+								row.getLong("timestamp"))));
+					}
+					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+					.end(result.encodePrettily());
+					}else {
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+						.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+				}
+			});
+	}
+	
+	private void getActuatorValues(RoutingContext routingContext) {
+
+		mySQLPool.query("SELECT * FROM actuator WHERE idactuator = " + routingContext.request().getParam("idActuator"), 
+				res -> {
+					if (res.succeeded()) {	
+						RowSet<Row> resultSet = res.result();
+						System.out.println("El número de elementos obtenidos es " + resultSet.size());
+						for (Row row : resultSet) {
+							switch(row.getString("name")) {
+								case "led":
+									getLed(routingContext);break;
+								
+								case "vibration":
+									getVibration(routingContext);break;
+
+							}
+						}
+					}else{
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+					}
+				});
+	}
+		
+	private void getLed(RoutingContext routingContext) {
+		String query;
+		if(routingContext.request().getParam("timestamp")==null) {
+			query="SELECT * FROM actuator_value_basic WHERE idactuator = "
+					+ routingContext.request().getParam("idActuator");
+		}else {
+			query="SELECT * FROM actuator_value_basic WHERE timestamp > "
+					+ routingContext.request().getParam("timestamp") + " AND idactuator = "
+					+ routingContext.request().getParam("idActuator");
+		}
+		mySQLPool.query(query, res -> {
+			if (res.succeeded()) {
+				
+				RowSet<Row> resultSet = res.result();
+				System.out.println("El número de elementos obtenidos es " + resultSet.size());
+				JsonArray result = new JsonArray();
+				
+				for (Row row : resultSet) {	
+					result.add(JsonObject.mapFrom(new Led(row.getInteger("idactuator"),
+							row.getInteger("mode"),
+							row.getFloat("value"),
+							row.getFloat("length"),
+							row.getLong("timestamp"))));
+				}
+				routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+				.end(result.encodePrettily());
+				}else {
+					routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+					.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+			}
+		});
+	}
+	
+	private void getVibration(RoutingContext routingContext) {
+		String query;
+		if(routingContext.request().getParam("timestamp")==null) {
+			query="SELECT * FROM actuator_value_basic WHERE idactuator = "
+					+ routingContext.request().getParam("idActuator");
+		}else {
+			query="SELECT * FROM actuator_value_basic WHERE timestamp > "
+					+ routingContext.request().getParam("timestamp") + " AND idactuator = "
+					+ routingContext.request().getParam("idActuator");
+		}
+		mySQLPool.query(query, res -> {
+				if (res.succeeded()) {
+					
+					RowSet<Row> resultSet = res.result();
+					System.out.println("El número de elementos obtenidos es " + resultSet.size());
+					JsonArray result = new JsonArray();
+					
+					for (Row row : resultSet) {
+						
+						result.add(JsonObject.mapFrom(new Vibration(row.getInteger("idactuator"),
+								row.getInteger("mode"),
+								row.getFloat("value"),
+								row.getFloat("length"),
+								row.getLong("timestamp"))));
+					}
+					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+					.end(result.encodePrettily());
+					}else {
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+						.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+				}
+			});
+	}
+	
+	/*
+	private void getSensorValuesByDevice(RoutingContext routingContext) {
+		mySQLPool.query("SELECT * FROM sensor WHERE iddevice = " + routingContext.request().getParam("idDevice"), 
+				res -> {
+					if (res.succeeded()) {	
+						RowSet<Row> resultSet = res.result();
+						System.out.println("El número de elementos obtenidos es " + resultSet.size());
+						for (Row row : resultSet) {
+							
+							switch(row.getString("name")) {
+								case "Location":
+									getLocation(routingContext, row.getInteger("idsensor"));break;
+								
+								case "Pressure":
+									getPressure(routingContext, row.getInteger("idsensor"));break;
+									
+								case "Sound":
+									getSound(routingContext, row.getInteger("idsensor"));break;
+									
+								case "Distance":
+									getDistance(routingContext, row.getInteger("idsensor"));break;
+							}
+						}
+					}else{
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+					}
+				});
+	}
+*/	
 	
 }
