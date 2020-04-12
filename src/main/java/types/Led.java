@@ -1,21 +1,19 @@
 package types;
 
 import java.util.Calendar;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Led {
-	
-	private static final AtomicInteger COUNTER=new AtomicInteger();
-	
+
 	int id;
 	int mode;
 	float luminosity;
 	float length;
 	long timestamp;
 	
-	public Led(int mode, float luminosity, float length) {
+
+	public Led(int id, int mode, float luminosity, float length, long timestamp) {
 		super();
-		this.setId(COUNTER.getAndIncrement());
+		this.id=id;
 		this.mode = mode;
 		if(mode==0) {
 			this.luminosity = 0;
@@ -28,8 +26,9 @@ public class Led {
 			this.length = length;
 		}
 		
-		this.timestamp = Calendar.getInstance().getTimeInMillis();
+		this.timestamp = timestamp;
 	}
+
 	public int getId() {
 		return id;
 	}
