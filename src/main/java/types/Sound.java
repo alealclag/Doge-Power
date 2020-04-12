@@ -1,12 +1,14 @@
 package types;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Sound {
 
 	Integer id;
 	Float decibels;
 	Long timestamp;
 	
-	public Sound(Integer id, Float decibels, Long timestamp) {
+	public Sound(@JsonProperty("id") Integer id, @JsonProperty("decibels") Float decibels, @JsonProperty("timestamp") Long timestamp) {
 		super();
 		this.id = id;
 		this.decibels = decibels;

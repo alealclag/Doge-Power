@@ -1,5 +1,7 @@
 package types;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Vibration {
 	
 	int id;
@@ -10,7 +12,7 @@ public class Vibration {
 	
 
 	
-	public Vibration(int id, int mode, float intensity, float length, long timestamp) {
+	public Vibration(@JsonProperty("id") int id, @JsonProperty("mode") int mode, @JsonProperty("intensity") float intensity, @JsonProperty("lenght") float length, @JsonProperty("timestamp") long timestamp) {
 		super();
 		this.id = id;
 		this.mode = mode;

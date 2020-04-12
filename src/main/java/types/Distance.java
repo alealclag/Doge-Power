@@ -1,5 +1,7 @@
 package types;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Distance {
 
 	Integer id;
@@ -9,7 +11,7 @@ public class Distance {
 	Long timestamp;
 	
 	
-	public Distance(Integer id, Float distance_to_door, Boolean isInside, Long timestamp) {
+	public Distance(@JsonProperty("id") Integer id, @JsonProperty("distance_to_door") Float distance_to_door, @JsonProperty("isInside") Boolean isInside, @JsonProperty("timestamp") Long timestamp) {
 		super();
 		this.id = id;
 		this.distance_to_door = distance_to_door;

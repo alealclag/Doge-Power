@@ -1,12 +1,14 @@
 package types;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Pressure {
 	
 	Integer id;
 	Float value;
 	Long timestamp;
 	
-	public Pressure(Integer id, Float value, Long timestamp) {
+	public Pressure(@JsonProperty("id") Integer id, @JsonProperty("value") Float value, @JsonProperty("timestamp") Long timestamp) {
 		super();
 		this.id = id;
 		this.value = value;
