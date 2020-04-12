@@ -441,46 +441,27 @@ public class DatabaseVerticle extends AbstractVerticle{
 */	
 	
 	private void postSensorValues(RoutingContext routingContext) {                                                  //inserta en la base de datos los datos de un unico sensor elegido en la URL 
-		System.out.println("you're inside the function");
-		Location location = Json.decodeValue(routingContext.getBodyAsString(), Location.class);
-		System.out.println("you're into after creating location object");
  
 		mySQLPool.query("SELECT * FROM sensor WHERE idsensor = " + routingContext.request().getParam("idSensor"), 
 				resAux -> {
+					
 					if (resAux.succeeded()) {
-						System.out.println("you're into resAux succeeded");
 						RowSet<Row> resultSet = resAux.result();
 						for (Row row : resultSet) {
 
 							switch(row.getString("name")) {
 							
 							case "Location":
-								mySQLPool.preparedQuery("INSERT INTO sensor_value_location (value_x, value_y, timestamp, idsensor) VALUES (?,?,?,?)",
-										Tuple.of(location.getX(), location.getY(), location.getTimestamp(),
-												routingContext.request().getParam("idSensor")),
-										handler -> {
-											
-											if (handler.succeeded()) {
-												System.out.println("you're into after creating location object");
-												System.out.println(handler.result().rowCount());
-												
-												routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-														.end(JsonObject.mapFrom(location).encodePrettily());
-												
-												}else {
-													routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
-													.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
-											}
-										});break;
+								postLocation(routingContext);break;
 								
 							case "Pressure":
-								break;
+								postPressure(routingContext);break;
 								
 							case "Sound":
-								break;
+								postSound(routingContext);break;
 							
 							case "Distance":
-								break;
+								postDistance(routingContext);break;
 								
 							}
 							
@@ -493,5 +474,89 @@ public class DatabaseVerticle extends AbstractVerticle{
 							.end((JsonObject.mapFrom(resAux.cause()).encodePrettily()));
 					}
 				});
+		
+	}
+	private void postLocation(RoutingContext routingContext) {
+		Location location = Json.decodeValue(routingContext.getBodyAsString(), Location.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_location (value_x, value_y, timestamp, idsensor) VALUES (?,?,?,?)",
+				Tuple.of(location.getX(), location.getY(), location.getTimestamp(),
+						routingContext.request().getParam("idSensor")),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(location).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	private void postPressure(RoutingContext routingContext) {
+		Pressure pressure = Json.decodeValue(routingContext.getBodyAsString(), Pressure.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_basic (value, timestamp, idsensor) VALUES (?,?,?)",
+				Tuple.of(pressure.getValue(), pressure.getTimestamp(),
+						routingContext.request().getParam("idSensor")),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(pressure).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	private void postSound(RoutingContext routingContext) {
+		Sound sound = Json.decodeValue(routingContext.getBodyAsString(), Sound.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_basic (value, timestamp, idsensor) VALUES (?,?,?)",
+				Tuple.of(sound.getDecibels(), sound.getTimestamp(),
+						routingContext.request().getParam("idSensor")),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(sound).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	private void postDistance(RoutingContext routingContext) {
+		Distance distance = Json.decodeValue(routingContext.getBodyAsString(), Distance.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (distance_to_door, is_Inside, timestamp, idsensor) VALUES (?,?,?,?)",
+				Tuple.of(distance.getDistance_to_door(), distance.getIs_inside(), distance.getTimestamp(),
+						routingContext.request().getParam("idSensor")),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(distance).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
 	}
 }
+
+
+
