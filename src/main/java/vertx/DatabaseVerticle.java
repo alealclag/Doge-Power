@@ -2,15 +2,13 @@ package vertx;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.*;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.*;
 import types.*;
 
 public class DatabaseVerticle extends AbstractVerticle{
@@ -20,11 +18,12 @@ public class DatabaseVerticle extends AbstractVerticle{
 	@Override
 	public void start(Promise<Void> startPromise) {
 		MySQLConnectOptions mySQLConnectOptions = new MySQLConnectOptions().setPort(3306).setHost("localhost")
-				.setDatabase("doge power").setUser("root").setPassword("7527");
+				.setDatabase("doge power").setUser("root").setPassword("Kike");
 		PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 		mySQLPool = MySQLPool.pool(vertx, mySQLConnectOptions, poolOptions);
 		
 		Router router = Router.router(vertx);
+		router.route().handler(BodyHandler.create());
 		vertx.createHttpServer().requestHandler(router::handle).listen(8080, result -> {
 			if (result.succeeded()) {
 				startPromise.complete();
@@ -44,6 +43,8 @@ public class DatabaseVerticle extends AbstractVerticle{
 		router.get("/api/actuator/values/:idActuator/:timestamp").handler(this::getActuatorValues);
 		router.get("/api/actuator/values/:idActuator").handler(this::getActuatorValues);
 		
+		
+		router.post("/api/sensor/values/:idSensor").handler(this::postSensorValues);
 		
 	
 	}
@@ -439,4 +440,58 @@ public class DatabaseVerticle extends AbstractVerticle{
 	}
 */	
 	
+	private void postSensorValues(RoutingContext routingContext) {                                                  //inserta en la base de datos los datos de un unico sensor elegido en la URL 
+		System.out.println("you're inside the function");
+		Location location = Json.decodeValue(routingContext.getBodyAsString(), Location.class);
+		System.out.println("you're into after creating location object");
+ 
+		mySQLPool.query("SELECT * FROM sensor WHERE idsensor = " + routingContext.request().getParam("idSensor"), 
+				resAux -> {
+					if (resAux.succeeded()) {
+						System.out.println("you're into resAux succeeded");
+						RowSet<Row> resultSet = resAux.result();
+						for (Row row : resultSet) {
+
+							switch(row.getString("name")) {
+							
+							case "Location":
+								mySQLPool.preparedQuery("INSERT INTO sensor_value_location (value_x, value_y, timestamp, idsensor) VALUES (?,?,?,?)",
+										Tuple.of(location.getX(), location.getY(), location.getTimestamp(),
+												routingContext.request().getParam("idSensor")),
+										handler -> {
+											
+											if (handler.succeeded()) {
+												System.out.println("you're into after creating location object");
+												System.out.println(handler.result().rowCount());
+												
+												routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+														.end(JsonObject.mapFrom(location).encodePrettily());
+												
+												}else {
+													routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+													.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+											}
+										});break;
+								
+							case "Pressure":
+								break;
+								
+							case "Sound":
+								break;
+							
+							case "Distance":
+								break;
+								
+							}
+							
+						}
+						
+						
+					}else {
+						System.out.println("you're into resAux not succeeded");
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(resAux.cause()).encodePrettily()));
+					}
+				});
+	}
 }
