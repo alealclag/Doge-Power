@@ -81,13 +81,13 @@ DROP TABLE IF EXISTS `device`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `device` (
-  `iddevice` int NOT NULL,
+  `iddevice` int NOT NULL AUTO_INCREMENT,
   `dog` varchar(45) NOT NULL,
   `iduser` int NOT NULL,
   PRIMARY KEY (`iddevice`),
   KEY `user_device_user_idx` (`iduser`),
   CONSTRAINT `user_device_user` FOREIGN KEY (`iduser`) REFERENCES `user` (`iduser`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -96,7 +96,7 @@ CREATE TABLE `device` (
 
 LOCK TABLES `device` WRITE;
 /*!40000 ALTER TABLE `device` DISABLE KEYS */;
-INSERT INTO `device` VALUES (1,'Tina',2),(2,'Trufa',2),(3,'Ipa',4),(4,'Lenny',3),(5,'Lala',3);
+INSERT INTO `device` VALUES (1,'Tina',2),(2,'Trufa',2),(3,'Ipa',4),(4,'Lenny',3),(5,'Lala',3),(8,'yjtjyt',2),(9,'Perrito',2),(10,'Perrito',3),(11,'Perrito',4),(13,'Perrito',3),(14,'Perritooooooo',2);
 /*!40000 ALTER TABLE `device` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -250,4 +250,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-04-12 20:18:26
+-- Dump completed on 2020-04-13 14:42:26
