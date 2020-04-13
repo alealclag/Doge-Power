@@ -1,11 +1,13 @@
 package vertx;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.json.*;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.mysqlclient.MySQLClient;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.*;
@@ -43,12 +45,14 @@ public class DatabaseVerticle extends AbstractVerticle{
 		router.get("/api/actuator/values/:idActuator/:timestamp").handler(this::getActuatorValues);
 		router.get("/api/actuator/values/:idActuator").handler(this::getActuatorValues);
 		
-		router.post("/api/user/newUser").handler(this::postUserInfo);
-		router.post("/api/device/newDevice/:idUser").handler(this::postDeviceInfo);
+		router.post("/api/user/new").handler(this::postUserInfo);
+		router.post("/api/device/new").handler(this::postDeviceInfo);
 		
 		router.post("/api/sensor/values/:idSensor").handler(this::postSensorValues);
 		router.post("/api/actuator/values/:idSensor").handler(this::postActuatorValues);
 		
+		router.post("/api/user/delete/:idUser").handler(this::deleteUserInfo);
+		router.post("/api/device/delete/:idDevice").handler(this::deleteDeviceInfo);
 	
 	}
 
@@ -447,7 +451,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 	private void postUserInfo(RoutingContext routingContext) {
 		User user = Json.decodeValue(routingContext.getBodyAsString(), User.class);	
 		
-		mySQLPool.preparedQuery("INSERT INTO sensor_value_location (name, password, birthdate, City) VALUES (?,?,?,?)",
+		mySQLPool.preparedQuery("INSERT INTO user (name, password, birthdate, City) VALUES (?,?,?,?)",
 				Tuple.of(user.getName(), user.getPassword(), user.getCity(), user.getCity()),
 				handler -> {
 					
@@ -467,11 +471,44 @@ public class DatabaseVerticle extends AbstractVerticle{
 		Device device = Json.decodeValue(routingContext.getBodyAsString(), Device.class);	
 		
 		mySQLPool.preparedQuery("INSERT INTO device (dog, iduser) VALUES (?,?)",
-				Tuple.of(device.getDog(), routingContext.request().getParam("idUser")),
+				Tuple.of(device.getDog(), device.getId()),
 				handler -> {
 					
 					if (handler.succeeded()) {
+						
+						RowSet<Row> rows = handler.result();
+						int lastInsertId = (int) (long) rows.property(MySQLClient.LAST_INSERTED_ID);
+						
+						mySQLPool.preparedQuery("INSERT INTO actuator (type,iddevice,name) VALUES (?,?,?),(?,?,?)",
+								Tuple.of("basic",lastInsertId,"led","basic",lastInsertId,"vibration"),
+								handlerAux -> {
+									if (handlerAux.succeeded()) {
+										
+										routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+												.end(JsonObject.mapFrom(device).encodePrettily());
+										
+										}else {
+											routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+											.end((JsonObject.mapFrom(handlerAux.cause()).encodePrettily()));
+									}
+								});
+								
+						mySQLPool.preparedQuery("INSERT INTO sensor (type,iddevice,name) VALUES (?,?,?),(?,?,?),(?,?,?),(?,?,?)",
+								Tuple.of("Location",lastInsertId,"Location","Basic",lastInsertId,"Pressure","Basic",lastInsertId,"Sound","Distance",lastInsertId,"Distance"),
+								handlerAux -> {
+									if (handlerAux.succeeded()) {
+										
+										routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+												.end(JsonObject.mapFrom(device).encodePrettily());
+										
+										}else {
+											routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+											.end((JsonObject.mapFrom(handlerAux.cause()).encodePrettily()));
+									}
+								});
+								
 						System.out.println(handler.result().rowCount());
+						System.out.println(lastInsertId);
 						
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 								.end(JsonObject.mapFrom(device).encodePrettily());
@@ -668,7 +705,42 @@ public class DatabaseVerticle extends AbstractVerticle{
 				});
 	}
 
-
+	private void deleteUserInfo(RoutingContext routingContext) {
+		
+		mySQLPool.query("DELETE FROM user WHERE iduser =  " + routingContext.request().getParam("idUser"),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end("Usuario borrado correctamente");
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	private void deleteDeviceInfo(RoutingContext routingContext) {
+		
+		mySQLPool.query("DELETE FROM device WHERE iddevice =  " + routingContext.request().getParam("idDevice"),
+				handler -> {
+					
+					if (handler.succeeded()) {
+								
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end("Dispositivo borrado correctamente");
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	
 
 }
 
