@@ -43,8 +43,11 @@ public class DatabaseVerticle extends AbstractVerticle{
 		router.get("/api/actuator/values/:idActuator/:timestamp").handler(this::getActuatorValues);
 		router.get("/api/actuator/values/:idActuator").handler(this::getActuatorValues);
 		
+		router.post("/api/user/newUser").handler(this::postUserInfo);
+		router.post("/api/device/newDevice/:idUser").handler(this::postDeviceInfo);
 		
 		router.post("/api/sensor/values/:idSensor").handler(this::postSensorValues);
+		router.post("/api/actuator/values/:idSensor").handler(this::postActuatorValues);
 		
 	
 	}
@@ -440,6 +443,46 @@ public class DatabaseVerticle extends AbstractVerticle{
 	}
 */	
 	
+	
+	private void postUserInfo(RoutingContext routingContext) {
+		User user = Json.decodeValue(routingContext.getBodyAsString(), User.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_location (name, password, birthdate, City) VALUES (?,?,?,?)",
+				Tuple.of(user.getName(), user.getPassword(), user.getCity(), user.getCity()),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(user).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	private void postDeviceInfo(RoutingContext routingContext) {
+		Device device = Json.decodeValue(routingContext.getBodyAsString(), Device.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO device (dog, iduser) VALUES (?,?)",
+				Tuple.of(device.getDog(), routingContext.request().getParam("idUser")),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(device).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	
 	private void postSensorValues(RoutingContext routingContext) {                                                  //inserta en la base de datos los datos de un unico sensor elegido en la URL 
  
 		mySQLPool.query("SELECT * FROM sensor WHERE idsensor = " + routingContext.request().getParam("idSensor"), 
@@ -539,7 +582,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 	private void postDistance(RoutingContext routingContext) {
 		Distance distance = Json.decodeValue(routingContext.getBodyAsString(), Distance.class);	
 		
-		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (distance_to_door, is_Inside, timestamp, idsensor) VALUES (?,?,?,?)",
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (distance_to_door, is_inside, timestamp, idsensor) VALUES (?,?,?,?)",
 				Tuple.of(distance.getDistance_to_door(), distance.getIs_inside(), distance.getTimestamp(),
 						routingContext.request().getParam("idSensor")),
 				handler -> {
@@ -556,6 +599,77 @@ public class DatabaseVerticle extends AbstractVerticle{
 					}
 				});
 	}
+
+	private void postActuatorValues(RoutingContext routingContext) {                                                 //inserta en la base de datos los datos de un unico actuador elegido en la URL
+
+		mySQLPool.query("SELECT * FROM actuator WHERE idactuator = " + routingContext.request().getParam("idActuator"), 
+				res -> {
+					if (res.succeeded()) {	
+						
+						RowSet<Row> resultSet = res.result();
+						for (Row row : resultSet) {
+							
+							switch(row.getString("name")) {
+							
+								case "led":
+									postLed(routingContext);break;
+								
+								case "vibration":
+									postVibration(routingContext);break;
+
+							}
+						}
+						
+					}else{
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+					}
+				});
+	}
+	private void postLed(RoutingContext routingContext){
+		Led led = Json.decodeValue(routingContext.getBodyAsString(), Led.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (value, timestamp, idactuator, length, mode) VALUES (?,?,?,?,?)",
+				Tuple.of(led.getLuminosity(), led.getTimestamp(), led.getTimestamp(),
+						routingContext.request().getParam("idSensor"), led.getLength(), led.getMode()),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(led).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+		
+	}
+	private void postVibration(RoutingContext routingContext){
+		Vibration vibration = Json.decodeValue(routingContext.getBodyAsString(), Vibration.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (value, timestamp, idactuator, length, mode) VALUES (?,?,?,?,?)",
+				Tuple.of(vibration.getIntensity(), vibration.getTimestamp(), vibration.getTimestamp(),
+						routingContext.request().getParam("idSensor"), vibration.getLength(), vibration.getMode()),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(vibration).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+
+
+
 }
 
 
