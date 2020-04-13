@@ -1,10 +1,13 @@
 package types;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Device {
 
 	int id;
 	String dog;
-	public Device(int id, String dog) {
+	
+	public Device(@JsonProperty("id") int id, @JsonProperty("dog") String dog) {
 		super();
 		this.id = id;
 		this.dog = dog;

@@ -2,15 +2,18 @@ package vertx;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import types.*;
 
 public class DatabaseVerticle extends AbstractVerticle{
@@ -25,6 +28,8 @@ public class DatabaseVerticle extends AbstractVerticle{
 		mySQLPool = MySQLPool.pool(vertx, mySQLConnectOptions, poolOptions);
 		
 		Router router = Router.router(vertx);
+		router.route().handler(BodyHandler.create());
+		
 		vertx.createHttpServer().requestHandler(router::handle).listen(8080, result -> {
 			if (result.succeeded()) {
 				startPromise.complete();
@@ -39,12 +44,13 @@ public class DatabaseVerticle extends AbstractVerticle{
 		
 		router.get("/api/sensor/values/:idSensor/:timestamp").handler(this::getSensorValues);
 		router.get("/api/sensor/values/:idSensor").handler(this::getSensorValues);
-		//router.get("/api/sensorsOf/values/:idDevice").handler(this::getSensorValuesByDevice);
+		router.get("/api/sensorsOf/values/:idDevice").handler(this::getSensorValuesByDevice);
 		
 		router.get("/api/actuator/values/:idActuator/:timestamp").handler(this::getActuatorValues);
 		router.get("/api/actuator/values/:idActuator").handler(this::getActuatorValues);
 		
-		
+		router.put("/api/user/:idUser").handler(this::putUser);
+		router.put("/api/device/:idDevice").handler(this::putDevice);
 	
 	}
 
@@ -177,9 +183,11 @@ public class DatabaseVerticle extends AbstractVerticle{
 								row.getFloat("value_x"),
 								row.getFloat("value_y"),
 								row.getLong("timestamp"))));
+						
 					}
+					System.out.println(result.encodePrettily());
 					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-					.end(result.encodePrettily());
+					.write(result.encodePrettily());
 					}else {
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 						.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
@@ -222,7 +230,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 								row.getLong("timestamp"))));
 					}
 					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-						.end(result.encodePrettily());
+						.write(result.encodePrettily());
 				}else {
 					routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 						.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
@@ -265,7 +273,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 								row.getLong("timestamp"))));
 					}
 					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-					.end(result.encodePrettily());
+					.write(result.encodePrettily());
 					}else {
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 						.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
@@ -309,7 +317,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 								row.getLong("timestamp"))));
 					}
 					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-					.end(result.encodePrettily());
+					.write(result.encodePrettily());
 					}else {
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 						.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
@@ -408,35 +416,85 @@ public class DatabaseVerticle extends AbstractVerticle{
 			});
 	}
 	
-	/*
-	private void getSensorValuesByDevice(RoutingContext routingContext) {
-		mySQLPool.query("SELECT * FROM sensor WHERE iddevice = " + routingContext.request().getParam("idDevice"), 
-				res -> {
-					if (res.succeeded()) {	
-						RowSet<Row> resultSet = res.result();
-						System.out.println("El número de elementos obtenidos es " + resultSet.size());
-						for (Row row : resultSet) {
-							
-							switch(row.getString("name")) {
-								case "Location":
-									getLocation(routingContext, row.getInteger("idsensor"));break;
-								
-								case "Pressure":
-									getPressure(routingContext, row.getInteger("idsensor"));break;
-									
-								case "Sound":
-									getSound(routingContext, row.getInteger("idsensor"));break;
-									
-								case "Distance":
-									getDistance(routingContext, row.getInteger("idsensor"));break;
-							}
-						}
-					}else{
+	private void putUser(RoutingContext routingContext) {
+		User user = Json.decodeValue(routingContext.getBodyAsString(), User.class);
+		mySQLPool.preparedQuery(
+				"UPDATE user SET name = ?, password = ?, birthdate = ?, city = ? WHERE iduser = ?",
+				Tuple.of(user.getName(), user.getPassword(), user.getBirthdate(),
+						user.getCity(), routingContext.request().getParam("idUser")),
+				handler -> {
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(user).encodePrettily());
+					} else {
+						System.out.println(handler.cause().toString());
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
-							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+								.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
 					}
 				});
 	}
-*/	
+
+	private void putDevice(RoutingContext routingContext) {
+		Device device = Json.decodeValue(routingContext.getBodyAsString(), Device.class);
+		mySQLPool.preparedQuery(
+				"UPDATE device SET dog = ? WHERE iddevice = ?",
+				Tuple.of(device.getDog(), routingContext.request().getParam("idDevice")),
+				handler -> {
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(device).encodePrettily());
+					} else {
+						System.out.println(handler.cause().toString());
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+								.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	
+
+	
+	
+	private void getSensorValuesByDevice(RoutingContext routingContext) {
+		
+		mySQLPool.getConnection(handler -> {
+			handler.result().query("SELECT * FROM sensor WHERE iddevice = " + routingContext.request().getParam("idDevice"), 
+					res -> {
+						
+						if (res.succeeded()) {
+							RowSet<Row> resultSet = res.result();
+							System.out.println("El número de elementos obtenidos es " + resultSet.size());
+							JsonArray result = new JsonArray();
+							for (Row row : resultSet) {
+								switch(row.getString("name")) {
+									case "Location":
+										getLocation(routingContext, row.getInteger("idsensor"));break;
+									
+									case "Pressure":
+										getPressure(routingContext, row.getInteger("idsensor"));break;
+										
+									case "Sound":
+										getSound(routingContext, row.getInteger("idsensor"));break;
+										
+									case "Distance":
+										getDistance(routingContext, row.getInteger("idsensor"));break;
+								}
+							}
+							
+							routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+									.end(result.encodePrettily());
+						} else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+									.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+						}
+						handler.result().close();
+					});
+		});
+		
+	}
+
 	
 }

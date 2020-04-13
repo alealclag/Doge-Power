@@ -1,5 +1,7 @@
 package types;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class User {
 
 	int id;
@@ -8,7 +10,9 @@ public class User {
 	Long birthdate;
 	String city;
 	
-	public User(int id, String name, String password, Long birthdate, String city) {
+	public User(@JsonProperty("iduser") int id, @JsonProperty("name") String name, 
+			@JsonProperty("password") String password, @JsonProperty("birthdate") Long birthdate, 
+			@JsonProperty("city") String city) {
 		super();
 		this.id = id;
 		this.name = name;
