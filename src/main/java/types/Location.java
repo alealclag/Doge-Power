@@ -11,13 +11,23 @@ public class Location {
 	
 	
 	
-	public Location(@JsonProperty("id") Integer id, @JsonProperty("x") Float x, @JsonProperty("y") Float y, @JsonProperty("timestamp") Long timestamp) {
+	public Location(@JsonProperty("id") Integer id, @JsonProperty("x") Float x, @JsonProperty("y") Float y) {
+		super();
+		this.id = id;
+		this.x = x;
+		this.y = y;
+		this.timestamp = System.currentTimeMillis();
+	}
+	
+	public Location(@JsonProperty("id") Integer id, @JsonProperty("x") Float x, @JsonProperty("y") Float y,
+			@JsonProperty("timestamp") Long timestamp) {
 		super();
 		this.id = id;
 		this.x = x;
 		this.y = y;
 		this.timestamp = timestamp;
 	}
+	
 	public int getId() {
 		return id;
 	}

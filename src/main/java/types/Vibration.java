@@ -12,7 +12,18 @@ public class Vibration {
 	
 
 	
-	public Vibration(@JsonProperty("id") int id, @JsonProperty("mode") int mode, @JsonProperty("intensity") float intensity, @JsonProperty("lenght") float length, @JsonProperty("timestamp") long timestamp) {
+	public Vibration(@JsonProperty("id") int id, @JsonProperty("mode") int mode,
+			@JsonProperty("intensity") float intensity, @JsonProperty("lenght") float length) {
+		super();
+		this.id = id;
+		this.mode = mode;
+		this.intensity = intensity;
+		this.length = length;
+		this.timestamp = System.currentTimeMillis();
+	}
+	
+	public Vibration(@JsonProperty("id") int id, @JsonProperty("mode") int mode, @JsonProperty("intensity") float intensity,
+			@JsonProperty("lenght") float length, @JsonProperty("timestamp") Long timestamp) {
 		super();
 		this.id = id;
 		this.mode = mode;
@@ -20,6 +31,7 @@ public class Vibration {
 		this.length = length;
 		this.timestamp = timestamp;
 	}
+	
 	public int getId() {
 		return id;
 	}

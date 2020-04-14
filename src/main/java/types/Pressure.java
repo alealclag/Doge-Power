@@ -8,12 +8,20 @@ public class Pressure {
 	Float value;
 	Long timestamp;
 	
+	public Pressure(@JsonProperty("id") Integer id, @JsonProperty("value") Float value) {
+		super();
+		this.id = id;
+		this.value = value;
+		this.timestamp = System.currentTimeMillis();
+	}
+	
 	public Pressure(@JsonProperty("id") Integer id, @JsonProperty("value") Float value, @JsonProperty("timestamp") Long timestamp) {
 		super();
 		this.id = id;
 		this.value = value;
 		this.timestamp = timestamp;
 	}
+	
 	public int getId() {
 		return id;
 	}
