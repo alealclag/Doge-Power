@@ -44,7 +44,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 		
 		router.get("/api/sensor/values/:idSensor/:timestamp").handler(this::getSensorValues);
 		router.get("/api/sensor/values/:idSensor").handler(this::getSensorValues);
-		router.get("/api/sensorsOf/values/:idDevice").handler(this::getSensorValuesByDevice);
 		
 		router.get("/api/actuator/values/:idActuator/:timestamp").handler(this::getActuatorValues);
 		router.get("/api/actuator/values/:idActuator").handler(this::getActuatorValues);
@@ -130,16 +129,16 @@ public class DatabaseVerticle extends AbstractVerticle{
 						for (Row row : resultSet) {
 							switch(row.getString("name")) {
 								case "Location":
-									getLocation(routingContext, -1);break;
+									getLocation(routingContext);break;
 								
 								case "Pressure":
-									getPressure(routingContext, -1);break;
+									getPressure(routingContext);break;
 									
 								case "Sound":
-									getSound(routingContext, -1);break;
+									getSound(routingContext);break;
 									
 								case "Distance":
-									getDistance(routingContext, -1);break;
+									getDistance(routingContext);break;
 							}
 						}
 					}else{
@@ -149,26 +148,15 @@ public class DatabaseVerticle extends AbstractVerticle{
 				});
 	}
 
-	private void getLocation(RoutingContext routingContext, int idSensor) {
+	private void getLocation(RoutingContext routingContext) {
 		String query;
 		if(routingContext.request().getParam("timestamp")==null) {
-			if(idSensor==-1) {
-				query="SELECT * FROM sensor_value_location WHERE idsensor = "
-						+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_location WHERE idsensor = " + idSensor;
-			}
-			
+			query="SELECT * FROM sensor_value_distance WHERE idsensor = "
+					+ routingContext.request().getParam("idSensor");
 		}else {
-			if(idSensor==-1) {
-			query="SELECT * FROM sensor_value_location WHERE timestamp > "
+			query="SELECT * FROM sensor_value_distance WHERE timestamp > "
 					+ routingContext.request().getParam("timestamp") + " AND idsensor = "
 					+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_location WHERE timestamp > "
-						+ routingContext.request().getParam("timestamp") + " AND idsensor = "
-						+ idSensor;
-			}
 		}
 		mySQLPool.query(query, res -> {
 				if (res.succeeded()) {
@@ -195,26 +183,15 @@ public class DatabaseVerticle extends AbstractVerticle{
 			});
 	}
 	
-	private void getPressure(RoutingContext routingContext, int idSensor) {
+	private void getPressure(RoutingContext routingContext) {
 		String query;
 		if(routingContext.request().getParam("timestamp")==null) {
-			if(idSensor==-1) {
-				query="SELECT * FROM sensor_value_basic WHERE idsensor = "
-						+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_basic WHERE idsensor = " + idSensor;
-			}
-			
+			query="SELECT * FROM sensor_value_distance WHERE idsensor = "
+					+ routingContext.request().getParam("idSensor");
 		}else {
-			if(idSensor==-1) {
-			query="SELECT * FROM sensor_value_basic WHERE timestamp > "
+			query="SELECT * FROM sensor_value_distance WHERE timestamp > "
 					+ routingContext.request().getParam("timestamp") + " AND idsensor = "
 					+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_basic WHERE timestamp > "
-						+ routingContext.request().getParam("timestamp") + " AND idsensor = "
-						+ idSensor;
-			}
 		}
 		mySQLPool.query(query, res -> {
 				if (res.succeeded()) {
@@ -238,26 +215,15 @@ public class DatabaseVerticle extends AbstractVerticle{
 			});
 	}
 	
-	private void getSound(RoutingContext routingContext, int idSensor) {
+	private void getSound(RoutingContext routingContext) {
 		String query;
 		if(routingContext.request().getParam("timestamp")==null) {
-			if(idSensor==-1) {
-				query="SELECT * FROM sensor_value_basic WHERE idsensor = "
-						+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_basic WHERE idsensor = " + idSensor;
-			}
-			
+			query="SELECT * FROM sensor_value_distance WHERE idsensor = "
+					+ routingContext.request().getParam("idSensor");
 		}else {
-			if(idSensor==-1) {
-			query="SELECT * FROM sensor_value_basic WHERE timestamp > "
+			query="SELECT * FROM sensor_value_distance WHERE timestamp > "
 					+ routingContext.request().getParam("timestamp") + " AND idsensor = "
 					+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_basic WHERE timestamp > "
-						+ routingContext.request().getParam("timestamp") + " AND idsensor = "
-						+ idSensor;
-			}
 		}
 		mySQLPool.query(query, res -> {
 				if (res.succeeded()) {
@@ -281,26 +247,15 @@ public class DatabaseVerticle extends AbstractVerticle{
 			});
 	}
 	
-	private void getDistance(RoutingContext routingContext, int idSensor) {
+	private void getDistance(RoutingContext routingContext) {
 		String query;
 		if(routingContext.request().getParam("timestamp")==null) {
-			if(idSensor==-1) {
-				query="SELECT * FROM sensor_value_distance WHERE idsensor = "
-						+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_distance WHERE idsensor = " + idSensor;
-			}
-			
+			query="SELECT * FROM sensor_value_distance WHERE idsensor = "
+					+ routingContext.request().getParam("idSensor");
 		}else {
-			if(idSensor==-1) {
 			query="SELECT * FROM sensor_value_distance WHERE timestamp > "
 					+ routingContext.request().getParam("timestamp") + " AND idsensor = "
 					+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_distance WHERE timestamp > "
-						+ routingContext.request().getParam("timestamp") + " AND idsensor = "
-						+ idSensor;
-			}
 		}
 		mySQLPool.query(query, res -> {
 				if (res.succeeded()) {
@@ -317,7 +272,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 								row.getLong("timestamp"))));
 					}
 					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-					.write(result.encodePrettily());
+					.end(result.encodePrettily());
 					}else {
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 						.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
@@ -456,45 +411,4 @@ public class DatabaseVerticle extends AbstractVerticle{
 	}
 	
 
-	
-	
-	private void getSensorValuesByDevice(RoutingContext routingContext) {
-		
-		mySQLPool.getConnection(handler -> {
-			handler.result().query("SELECT * FROM sensor WHERE iddevice = " + routingContext.request().getParam("idDevice"), 
-					res -> {
-						
-						if (res.succeeded()) {
-							RowSet<Row> resultSet = res.result();
-							System.out.println("El número de elementos obtenidos es " + resultSet.size());
-							JsonArray result = new JsonArray();
-							for (Row row : resultSet) {
-								switch(row.getString("name")) {
-									case "Location":
-										getLocation(routingContext, row.getInteger("idsensor"));break;
-									
-									case "Pressure":
-										getPressure(routingContext, row.getInteger("idsensor"));break;
-										
-									case "Sound":
-										getSound(routingContext, row.getInteger("idsensor"));break;
-										
-									case "Distance":
-										getDistance(routingContext, row.getInteger("idsensor"));break;
-								}
-							}
-							
-							routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-									.end(result.encodePrettily());
-						} else {
-							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
-									.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
-						}
-						handler.result().close();
-					});
-		});
-		
-	}
-
-	
 }
