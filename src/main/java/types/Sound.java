@@ -7,15 +7,8 @@ public class Sound {
 	Integer id;
 	Float decibels;
 	Long timestamp;
-	
-	public Sound(@JsonProperty("id") Integer id, @JsonProperty("decibels") Float decibels) {
-		super();
-		this.id = id;
-		this.decibels = decibels;
-		this.timestamp = System.currentTimeMillis();
-	}
 
-	public Sound(@JsonProperty("id") Integer id, @JsonProperty("decibels") Float decibels, @JsonProperty("timestamp") Long timestamp) {
+	public Sound(@JsonProperty("id") Integer id, @JsonProperty("value") Float decibels, @JsonProperty("timestamp") Long timestamp) {
 		super();
 		this.id = id;
 		this.decibels = decibels;

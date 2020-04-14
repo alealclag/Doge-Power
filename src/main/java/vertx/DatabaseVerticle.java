@@ -56,10 +56,10 @@ public class DatabaseVerticle extends AbstractVerticle{
 		router.post("/api/device/new").handler(this::postDeviceInfo);
 		
 		router.post("/api/sensor/values/:idSensor").handler(this::postSensorValues);
-		router.post("/api/actuator/values/:idSensor").handler(this::postActuatorValues);
+		router.post("/api/actuator/values/:idActuator").handler(this::postActuatorValues);
 		
-		router.post("/api/user/delete/:idUser").handler(this::deleteUserInfo);
-		router.post("/api/device/delete/:idDevice").handler(this::deleteDeviceInfo);
+		router.delete("/api/user/:idUser").handler(this::deleteUserInfo);
+		router.delete("/api/device/:idDevice").handler(this::deleteDeviceInfo);
 
 	
 	}
@@ -529,7 +529,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 	
 	private void postLocation(RoutingContext routingContext) {
 		Location location = Json.decodeValue(routingContext.getBodyAsString(), Location.class);	
-		
 		mySQLPool.preparedQuery("INSERT INTO sensor_value_location (value_x, value_y, timestamp, idsensor) VALUES (?,?,?,?)",
 				Tuple.of(location.getX(), location.getY(), System.currentTimeMillis(),
 						routingContext.request().getParam("idSensor")),
@@ -568,8 +567,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 					}
 				});
 	}
-	
-	
+		
 	private void postSound(RoutingContext routingContext) {
 		Sound sound = Json.decodeValue(routingContext.getBodyAsString(), Sound.class);	
 		
@@ -640,10 +638,9 @@ public class DatabaseVerticle extends AbstractVerticle{
 	
 	private void postLed(RoutingContext routingContext){
 		Led led = Json.decodeValue(routingContext.getBodyAsString(), Led.class);	
-		
-		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (value, timestamp, idactuator, length, mode) VALUES (?,?,?,?,?)",
+		mySQLPool.preparedQuery("INSERT INTO actuator_value_basic (value, timestamp, idactuator, length, mode) VALUES (?,?,?,?,?)",
 				Tuple.of(led.getLuminosity(), System.currentTimeMillis(),
-						routingContext.request().getParam("idSensor"), led.getLength(), led.getMode()),
+						routingContext.request().getParam("idActuator"), led.getLength(), led.getMode()),
 				handler -> {
 					
 					if (handler.succeeded()) {
@@ -663,9 +660,9 @@ public class DatabaseVerticle extends AbstractVerticle{
 	private void postVibration(RoutingContext routingContext){
 		Vibration vibration = Json.decodeValue(routingContext.getBodyAsString(), Vibration.class);	
 		
-		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (value, timestamp, idactuator, length, mode) VALUES (?,?,?,?,?)",
+		mySQLPool.preparedQuery("INSERT INTO actuator_value_basic (value, timestamp, idactuator, length, mode) VALUES (?,?,?,?,?)",
 				Tuple.of(vibration.getIntensity(), System.currentTimeMillis(),
-						routingContext.request().getParam("idSensor"), vibration.getLength(), vibration.getMode()),
+						routingContext.request().getParam("idActuator"), vibration.getLength(), vibration.getMode()),
 				handler -> {
 					
 					if (handler.succeeded()) {

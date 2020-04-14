@@ -10,18 +10,6 @@ public class Vibration {
 	float length;
 	long timestamp;
 	
-
-	
-	public Vibration(@JsonProperty("id") int id, @JsonProperty("mode") int mode,
-			@JsonProperty("intensity") float intensity, @JsonProperty("lenght") float length) {
-		super();
-		this.id = id;
-		this.mode = mode;
-		this.intensity = intensity;
-		this.length = length;
-		this.timestamp = System.currentTimeMillis();
-	}
-	
 	public Vibration(@JsonProperty("id") int id, @JsonProperty("mode") int mode, @JsonProperty("intensity") float intensity,
 			@JsonProperty("lenght") float length, @JsonProperty("timestamp") Long timestamp) {
 		super();

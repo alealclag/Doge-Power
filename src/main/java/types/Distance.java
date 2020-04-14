@@ -10,16 +10,6 @@ public class Distance {
 	Boolean is_near_door;
 	Long timestamp;
 	
-	public Distance(@JsonProperty("id") Integer id, @JsonProperty("distance_to_door") Float distance_to_door, 
-			@JsonProperty("is_inside") Boolean is_inside) {
-		super();
-		this.id = id;
-		this.distance_to_door = distance_to_door;
-		this.is_inside = is_inside;
-		this.timestamp = System.currentTimeMillis();
-		this.is_near_door = distance_to_door <= 1;
-	}
-	
 	public Distance(@JsonProperty("id") Integer id, @JsonProperty("distance_to_door") Float distance_to_door,
 			@JsonProperty("is_inside") Boolean is_inside, @JsonProperty("timestamp") Long timestamp) {
 		super();

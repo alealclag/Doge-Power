@@ -9,26 +9,6 @@ public class Led {
 	float luminosity;
 	float length;
 	long timestamp;
-	
-
-	public Led(@JsonProperty("id") int id, @JsonProperty("mode") int mode, @JsonProperty("luminosity") float luminosity,
-			@JsonProperty("length") float length) {
-		super();
-		this.id=id;
-		this.mode = mode;
-		if(mode==0) {
-			this.luminosity = 0;
-			this.length = 0;
-		}else if(mode==1){
-			this.luminosity = luminosity;
-			this.length = 0;
-		}else {
-			this.luminosity = luminosity;
-			this.length = length;
-		}
-		
-		this.timestamp = System.currentTimeMillis();
-	}
 
 	public Led(@JsonProperty("id") int id, @JsonProperty("mode") int mode, @JsonProperty("luminosity") float luminosity,
 			@JsonProperty("length") float length, @JsonProperty("timestamp") Long timestamp) {
