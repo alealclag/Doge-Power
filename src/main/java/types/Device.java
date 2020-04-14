@@ -8,6 +8,7 @@ public class Device {
 	String dog;
 	
 	public Device(@JsonProperty("id") int id, @JsonProperty("dog") String dog) {
+
 		super();
 		this.id = id;
 		this.dog = dog;

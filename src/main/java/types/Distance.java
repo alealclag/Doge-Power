@@ -1,67 +1,65 @@
 package types;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Distance {
 
 	Integer id;
 	Float distance_to_door;
-	Boolean isInside;
-	Boolean isNearDoor;
+	Boolean is_inside;
+	Boolean is_near_door;
 	Long timestamp;
 	
-	
-	public Distance(Integer id, Float distance_to_door, Boolean isInside, Long timestamp) {
+	public Distance(@JsonProperty("id") Integer id, @JsonProperty("distance_to_door") Float distance_to_door, @JsonProperty("is_inside") Boolean is_inside, @JsonProperty("timestamp") Long timestamp) {
 		super();
 		this.id = id;
 		this.distance_to_door = distance_to_door;
-		this.isInside = isInside;
-		this.isNearDoor = distance_to_door<=1;
+		this.is_inside = is_inside;
 		this.timestamp = timestamp;
+		this.is_near_door = distance_to_door <= 1;
 	}
-	public int getId() {
+	
+	
+	public Integer getId() {
 		return id;
 	}
 	public void setId(Integer id) {
 		this.id = id;
 	}
-
-	public Boolean getIsInside() {
-		return isInside;
+	public Float getDistance_to_door() {
+		return distance_to_door;
 	}
-	public void setIsInside(Boolean isInside) {
-		this.isInside = isInside;
+	public void setDistance_to_door(Float distance_to_door) {
+		this.distance_to_door = distance_to_door;
 	}
-
-	public long getTimestamp() {
+	public Boolean getIs_inside() {
+		return is_inside;
+	}
+	public void setIs_inside(Boolean is_inside) {
+		this.is_inside = is_inside;
+	}
+	public Boolean getIs_near_door() {
+		return is_near_door;
+	}
+	public void setIs_near_door(Boolean is_near_door) {
+		this.is_near_door = is_near_door;
+	}
+	public Long getTimestamp() {
 		return timestamp;
 	}
 	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
-
-	public float getDistance_to_door() {
-		return distance_to_door;
-	}
-
-	public void setDistance_to_door(Float distance_to_door) {
-		this.distance_to_door = distance_to_door;
-	}
-
-	public Boolean getIsNearDoor() {
-		return isNearDoor;
-	}
-
-	public void setIsNearDoor(Boolean isNearDoor) {
-		this.isNearDoor = isNearDoor;
-	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + Float.floatToIntBits(distance_to_door);
-		result = prime * result + id;
-		result = prime * result + ((isInside == null) ? 0 : isInside.hashCode());
-		result = prime * result + ((isNearDoor == null) ? 0 : isNearDoor.hashCode());
-		result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
+		result = prime * result + ((distance_to_door == null) ? 0 : distance_to_door.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((is_inside == null) ? 0 : is_inside.hashCode());
+		result = prime * result + ((is_near_door == null) ? 0 : is_near_door.hashCode());
+		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
 		return result;
 	}
 	@Override
@@ -73,24 +71,36 @@ public class Distance {
 		if (getClass() != obj.getClass())
 			return false;
 		Distance other = (Distance) obj;
-		if (Float.floatToIntBits(distance_to_door) != Float.floatToIntBits(other.distance_to_door))
-			return false;
-		if (id != other.id)
-			return false;
-		if (isInside == null) {
-			if (other.isInside != null)
+		if (distance_to_door == null) {
+			if (other.distance_to_door != null)
 				return false;
-		} else if (!isInside.equals(other.isInside))
+		} else if (!distance_to_door.equals(other.distance_to_door))
 			return false;
-		if (isNearDoor == null) {
-			if (other.isNearDoor != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!isNearDoor.equals(other.isNearDoor))
+		} else if (!id.equals(other.id))
 			return false;
-		if (timestamp != other.timestamp)
+		if (is_inside == null) {
+			if (other.is_inside != null)
+				return false;
+		} else if (!is_inside.equals(other.is_inside))
+			return false;
+		if (is_near_door == null) {
+			if (other.is_near_door != null)
+				return false;
+		} else if (!is_near_door.equals(other.is_near_door))
+			return false;
+		if (timestamp == null) {
+			if (other.timestamp != null)
+				return false;
+		} else if (!timestamp.equals(other.timestamp))
 			return false;
 		return true;
 	}
+	
+	
+	
 
 
 	

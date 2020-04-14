@@ -1,6 +1,7 @@
 package vertx;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -23,13 +24,13 @@ public class DatabaseVerticle extends AbstractVerticle{
 	@Override
 	public void start(Promise<Void> startPromise) {
 		MySQLConnectOptions mySQLConnectOptions = new MySQLConnectOptions().setPort(3306).setHost("localhost")
-				.setDatabase("doge power").setUser("root").setPassword("7527");
+				.setDatabase("doge power").setUser("root").setPassword("Kike");
 		PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 		mySQLPool = MySQLPool.pool(vertx, mySQLConnectOptions, poolOptions);
 		
 		Router router = Router.router(vertx);
 		router.route().handler(BodyHandler.create());
-		
+
 		vertx.createHttpServer().requestHandler(router::handle).listen(8080, result -> {
 			if (result.succeeded()) {
 				startPromise.complete();
@@ -50,6 +51,16 @@ public class DatabaseVerticle extends AbstractVerticle{
 		
 		router.put("/api/user/:idUser").handler(this::putUser);
 		router.put("/api/device/:idDevice").handler(this::putDevice);
+
+		router.post("/api/user/new").handler(this::postUserInfo);
+		router.post("/api/device/new").handler(this::postDeviceInfo);
+		
+		router.post("/api/sensor/values/:idSensor").handler(this::postSensorValues);
+		router.post("/api/actuator/values/:idSensor").handler(this::postActuatorValues);
+		
+		router.post("/api/user/delete/:idUser").handler(this::deleteUserInfo);
+		router.post("/api/device/delete/:idDevice").handler(this::deleteDeviceInfo);
+
 	
 	}
 
@@ -410,5 +421,300 @@ public class DatabaseVerticle extends AbstractVerticle{
 				});
 	}
 	
+	private void postUserInfo(RoutingContext routingContext) {
+		User user = Json.decodeValue(routingContext.getBodyAsString(), User.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO user (name, password, birthdate, City) VALUES (?,?,?,?)",
+				Tuple.of(user.getName(), user.getPassword(), user.getCity(), user.getCity()),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(user).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	private void postDeviceInfo(RoutingContext routingContext) {
+		Device device = Json.decodeValue(routingContext.getBodyAsString(), Device.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO device (dog, iduser) VALUES (?,?)",
+				Tuple.of(device.getDog(), device.getId()),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						
+						RowSet<Row> rows = handler.result();
+						int lastInsertId = (int) (long) rows.property(MySQLClient.LAST_INSERTED_ID);
+						
+						mySQLPool.preparedQuery("INSERT INTO actuator (type,iddevice,name) VALUES (?,?,?),(?,?,?)",
+								Tuple.of("basic",lastInsertId,"led","basic",lastInsertId,"vibration"),
+								handlerAux -> {
+									if (handlerAux.succeeded()) {
+										
+										routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+												.end(JsonObject.mapFrom(device).encodePrettily());
+										
+										}else {
+											routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+											.end((JsonObject.mapFrom(handlerAux.cause()).encodePrettily()));
+									}
+								});
+								
+						mySQLPool.preparedQuery("INSERT INTO sensor (type,iddevice,name) VALUES (?,?,?),(?,?,?),(?,?,?),(?,?,?)",
+								Tuple.of("Location",lastInsertId,"Location","Basic",lastInsertId,"Pressure","Basic",lastInsertId,"Sound","Distance",lastInsertId,"Distance"),
+								handlerAux -> {
+									if (handlerAux.succeeded()) {
+										
+										routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+												.end(JsonObject.mapFrom(device).encodePrettily());
+										
+										}else {
+											routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+											.end((JsonObject.mapFrom(handlerAux.cause()).encodePrettily()));
+									}
+								});
+								
+						System.out.println(handler.result().rowCount());
+						System.out.println(lastInsertId);
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(device).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	
+	private void postSensorValues(RoutingContext routingContext) {                                                  //inserta en la base de datos los datos de un unico sensor elegido en la URL 
+ 
+		mySQLPool.query("SELECT * FROM sensor WHERE idsensor = " + routingContext.request().getParam("idSensor"), 
+				resAux -> {
+					
+					if (resAux.succeeded()) {
+						RowSet<Row> resultSet = resAux.result();
+						for (Row row : resultSet) {
+
+							switch(row.getString("name")) {
+							
+							case "Location":
+								postLocation(routingContext);break;
+								
+							case "Pressure":
+								postPressure(routingContext);break;
+								
+							case "Sound":
+								postSound(routingContext);break;
+							
+							case "Distance":
+								postDistance(routingContext);break;
+								
+							}
+							
+						}
+						
+						
+					}else {
+						System.out.println("you're into resAux not succeeded");
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(resAux.cause()).encodePrettily()));
+					}
+				});
+		
+	}
+	private void postLocation(RoutingContext routingContext) {
+		Location location = Json.decodeValue(routingContext.getBodyAsString(), Location.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_location (value_x, value_y, timestamp, idsensor) VALUES (?,?,?,?)",
+				Tuple.of(location.getX(), location.getY(), location.getTimestamp(),
+						routingContext.request().getParam("idSensor")),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(location).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	private void postPressure(RoutingContext routingContext) {
+		Pressure pressure = Json.decodeValue(routingContext.getBodyAsString(), Pressure.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_basic (value, timestamp, idsensor) VALUES (?,?,?)",
+				Tuple.of(pressure.getValue(), pressure.getTimestamp(),
+						routingContext.request().getParam("idSensor")),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(pressure).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	private void postSound(RoutingContext routingContext) {
+		Sound sound = Json.decodeValue(routingContext.getBodyAsString(), Sound.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_basic (value, timestamp, idsensor) VALUES (?,?,?)",
+				Tuple.of(sound.getDecibels(), sound.getTimestamp(),
+						routingContext.request().getParam("idSensor")),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(sound).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	private void postDistance(RoutingContext routingContext) {
+		Distance distance = Json.decodeValue(routingContext.getBodyAsString(), Distance.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (distance_to_door, is_inside, timestamp, idsensor) VALUES (?,?,?,?)",
+				Tuple.of(distance.getDistance_to_door(), distance.getIs_inside(), distance.getTimestamp(),
+						routingContext.request().getParam("idSensor")),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(distance).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+
+	private void postActuatorValues(RoutingContext routingContext) {                                                 //inserta en la base de datos los datos de un unico actuador elegido en la URL
+
+		mySQLPool.query("SELECT * FROM actuator WHERE idactuator = " + routingContext.request().getParam("idActuator"), 
+				res -> {
+					if (res.succeeded()) {	
+						
+						RowSet<Row> resultSet = res.result();
+						for (Row row : resultSet) {
+							
+							switch(row.getString("name")) {
+							
+								case "led":
+									postLed(routingContext);break;
+								
+								case "vibration":
+									postVibration(routingContext);break;
+
+							}
+						}
+						
+					}else{
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+					}
+				});
+	}
+	private void postLed(RoutingContext routingContext){
+		Led led = Json.decodeValue(routingContext.getBodyAsString(), Led.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (value, timestamp, idactuator, length, mode) VALUES (?,?,?,?,?)",
+				Tuple.of(led.getLuminosity(), led.getTimestamp(), led.getTimestamp(),
+						routingContext.request().getParam("idSensor"), led.getLength(), led.getMode()),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(led).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+		
+	}
+	private void postVibration(RoutingContext routingContext){
+		Vibration vibration = Json.decodeValue(routingContext.getBodyAsString(), Vibration.class);	
+		
+		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (value, timestamp, idactuator, length, mode) VALUES (?,?,?,?,?)",
+				Tuple.of(vibration.getIntensity(), vibration.getTimestamp(), vibration.getTimestamp(),
+						routingContext.request().getParam("idSensor"), vibration.getLength(), vibration.getMode()),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(vibration).encodePrettily());
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+
+	private void deleteUserInfo(RoutingContext routingContext) {
+		
+		mySQLPool.query("DELETE FROM user WHERE iduser =  " + routingContext.request().getParam("idUser"),
+				handler -> {
+					
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end("Usuario borrado correctamente");
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
+	private void deleteDeviceInfo(RoutingContext routingContext) {
+		
+		mySQLPool.query("DELETE FROM device WHERE iddevice =  " + routingContext.request().getParam("idDevice"),
+				handler -> {
+					
+					if (handler.succeeded()) {
+								
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end("Dispositivo borrado correctamente");
+						
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
 
 }
+
+
+
