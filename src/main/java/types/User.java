@@ -10,7 +10,9 @@ public class User {
 	Long birthdate;
 	String city;
 	
-	public User(@JsonProperty("id") int id, @JsonProperty("name") String name, @JsonProperty("password") String password, @JsonProperty("birthdate") Long birthdate, @JsonProperty("city") String city) {
+	public User(@JsonProperty("iduser") int id, @JsonProperty("name") String name, 
+			@JsonProperty("password") String password, @JsonProperty("birthdate") Long birthdate, 
+			@JsonProperty("city") String city) {
 		super();
 		this.id = id;
 		this.name = name;

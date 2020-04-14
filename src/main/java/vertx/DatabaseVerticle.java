@@ -1,16 +1,20 @@
 package vertx;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.json.*;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.mysqlclient.MySQLClient;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
-import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import types.*;
 
 public class DatabaseVerticle extends AbstractVerticle{
@@ -20,12 +24,13 @@ public class DatabaseVerticle extends AbstractVerticle{
 	@Override
 	public void start(Promise<Void> startPromise) {
 		MySQLConnectOptions mySQLConnectOptions = new MySQLConnectOptions().setPort(3306).setHost("localhost")
-				.setDatabase("doge power").setUser("root").setPassword("Kike");
+				.setDatabase("doge power").setUser("root").setPassword("root");
 		PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 		mySQLPool = MySQLPool.pool(vertx, mySQLConnectOptions, poolOptions);
 		
 		Router router = Router.router(vertx);
 		router.route().handler(BodyHandler.create());
+
 		vertx.createHttpServer().requestHandler(router::handle).listen(8080, result -> {
 			if (result.succeeded()) {
 				startPromise.complete();
@@ -40,19 +45,22 @@ public class DatabaseVerticle extends AbstractVerticle{
 		
 		router.get("/api/sensor/values/:idSensor/:timestamp").handler(this::getSensorValues);
 		router.get("/api/sensor/values/:idSensor").handler(this::getSensorValues);
-		//router.get("/api/sensorsOf/values/:idDevice").handler(this::getSensorValuesByDevice);
 		
 		router.get("/api/actuator/values/:idActuator/:timestamp").handler(this::getActuatorValues);
 		router.get("/api/actuator/values/:idActuator").handler(this::getActuatorValues);
 		
+		router.put("/api/user/:idUser").handler(this::putUser);
+		router.put("/api/device/:idDevice").handler(this::putDevice);
+
 		router.post("/api/user/new").handler(this::postUserInfo);
 		router.post("/api/device/new").handler(this::postDeviceInfo);
 		
 		router.post("/api/sensor/values/:idSensor").handler(this::postSensorValues);
-		router.post("/api/actuator/values/:idSensor").handler(this::postActuatorValues);
+		router.post("/api/actuator/values/:idActuator").handler(this::postActuatorValues);
 		
-		router.post("/api/user/delete/:idUser").handler(this::deleteUserInfo);
-		router.post("/api/device/delete/:idDevice").handler(this::deleteDeviceInfo);
+		router.delete("/api/user/:idUser").handler(this::deleteUserInfo);
+		router.delete("/api/device/:idDevice").handler(this::deleteDeviceInfo);
+
 	
 	}
 
@@ -102,7 +110,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 				});
 	}
 
-	private void getDeviceInfoByUser(RoutingContext routingContext) {
+	private void getDeviceInfoByUser(RoutingContext routingContext) {  //Devuelve la información de todos los dispositivos asociados a un usuario
 		mySQLPool.query("SELECT * FROM device WHERE iduser = " + routingContext.request().getParam("idUser"), 
 				res -> {
 					if (res.succeeded()) {	
@@ -123,7 +131,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 				});
 	}
 	
-	private void getSensorValues(RoutingContext routingContext) {
+	private void getSensorValues(RoutingContext routingContext) { //Devuelve el historial de valores de un sensor independientemente de su tipo. También puede hacerse filtrado por tiempo
 		mySQLPool.query("SELECT * FROM sensor WHERE idsensor = " + routingContext.request().getParam("idSensor"), 
 				res -> {
 					if (res.succeeded()) {	
@@ -132,16 +140,16 @@ public class DatabaseVerticle extends AbstractVerticle{
 						for (Row row : resultSet) {
 							switch(row.getString("name")) {
 								case "Location":
-									getLocation(routingContext, -1);break;
+									getLocation(routingContext);break;
 								
 								case "Pressure":
-									getPressure(routingContext, -1);break;
+									getPressure(routingContext);break;
 									
 								case "Sound":
-									getSound(routingContext, -1);break;
+									getSound(routingContext);break;
 									
 								case "Distance":
-									getDistance(routingContext, -1);break;
+									getDistance(routingContext);break;
 							}
 						}
 					}else{
@@ -151,32 +159,21 @@ public class DatabaseVerticle extends AbstractVerticle{
 				});
 	}
 
-	private void getLocation(RoutingContext routingContext, int idSensor) {
-		String query;
+	private void getLocation(RoutingContext routingContext) { //Esta función es auxiliar a la anterior, al igual que las tres siguientes.
+		String query;										 //Si en la URL se ha especificado un timestamp, la consulta muestra solo las entradas posteriores al timestamp dado.
 		if(routingContext.request().getParam("timestamp")==null) {
-			if(idSensor==-1) {
-				query="SELECT * FROM sensor_value_location WHERE idsensor = "
-						+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_location WHERE idsensor = " + idSensor;
-			}
-			
+			query="SELECT * FROM sensor_value_location WHERE idsensor = "
+					+ routingContext.request().getParam("idSensor");
 		}else {
-			if(idSensor==-1) {
 			query="SELECT * FROM sensor_value_location WHERE timestamp > "
 					+ routingContext.request().getParam("timestamp") + " AND idsensor = "
 					+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_location WHERE timestamp > "
-						+ routingContext.request().getParam("timestamp") + " AND idsensor = "
-						+ idSensor;
-			}
 		}
 		mySQLPool.query(query, res -> {
 				if (res.succeeded()) {
 					
 					RowSet<Row> resultSet = res.result();
-					System.out.println("aEl número de elementos obtenidos es " + resultSet.size());
+					System.out.println("El número de elementos obtenidos es " + resultSet.size());
 					JsonArray result = new JsonArray();
 					
 					for (Row row : resultSet) {
@@ -185,6 +182,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 								row.getFloat("value_x"),
 								row.getFloat("value_y"),
 								row.getLong("timestamp"))));
+						
 					}
 					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 					.end(result.encodePrettily());
@@ -195,32 +193,21 @@ public class DatabaseVerticle extends AbstractVerticle{
 			});
 	}
 	
-	private void getPressure(RoutingContext routingContext, int idSensor) {
+	private void getPressure(RoutingContext routingContext) {
 		String query;
 		if(routingContext.request().getParam("timestamp")==null) {
-			if(idSensor==-1) {
-				query="SELECT * FROM sensor_value_basic WHERE idsensor = "
-						+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_basic WHERE idsensor = " + idSensor;
-			}
-			
+			query="SELECT * FROM sensor_value_basic WHERE idsensor = "
+					+ routingContext.request().getParam("idSensor");
 		}else {
-			if(idSensor==-1) {
 			query="SELECT * FROM sensor_value_basic WHERE timestamp > "
 					+ routingContext.request().getParam("timestamp") + " AND idsensor = "
 					+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_basic WHERE timestamp > "
-						+ routingContext.request().getParam("timestamp") + " AND idsensor = "
-						+ idSensor;
-			}
 		}
 		mySQLPool.query(query, res -> {
 				if (res.succeeded()) {
 							
 					RowSet<Row> resultSet = res.result();
-					System.out.println("bEl número de elementos obtenidos es " + resultSet.size());
+					System.out.println("El número de elementos obtenidos es " + resultSet.size());
 					JsonArray result = new JsonArray();
 							
 					for (Row row : resultSet) {
@@ -238,32 +225,21 @@ public class DatabaseVerticle extends AbstractVerticle{
 			});
 	}
 	
-	private void getSound(RoutingContext routingContext, int idSensor) {
+	private void getSound(RoutingContext routingContext) {
 		String query;
 		if(routingContext.request().getParam("timestamp")==null) {
-			if(idSensor==-1) {
-				query="SELECT * FROM sensor_value_basic WHERE idsensor = "
-						+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_basic WHERE idsensor = " + idSensor;
-			}
-			
+			query="SELECT * FROM sensor_value_basic WHERE idsensor = "
+					+ routingContext.request().getParam("idSensor");
 		}else {
-			if(idSensor==-1) {
 			query="SELECT * FROM sensor_value_basic WHERE timestamp > "
 					+ routingContext.request().getParam("timestamp") + " AND idsensor = "
 					+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_basic WHERE timestamp > "
-						+ routingContext.request().getParam("timestamp") + " AND idsensor = "
-						+ idSensor;
-			}
 		}
 		mySQLPool.query(query, res -> {
 				if (res.succeeded()) {
 
 					RowSet<Row> resultSet = res.result();
-					System.out.println("cEl número de elementos obtenidos es " + resultSet.size());
+					System.out.println("El número de elementos obtenidos es " + resultSet.size());
 					JsonArray result = new JsonArray();
 
 					for (Row row : resultSet) {
@@ -273,7 +249,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 								row.getLong("timestamp"))));
 					}
 					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-					.end(result.encodePrettily());
+						.end(result.encodePrettily());
 					}else {
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 						.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
@@ -281,32 +257,21 @@ public class DatabaseVerticle extends AbstractVerticle{
 			});
 	}
 	
-	private void getDistance(RoutingContext routingContext, int idSensor) {
+	private void getDistance(RoutingContext routingContext) {
 		String query;
 		if(routingContext.request().getParam("timestamp")==null) {
-			if(idSensor==-1) {
-				query="SELECT * FROM sensor_value_distance WHERE idsensor = "
-						+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_distance WHERE idsensor = " + idSensor;
-			}
-			
+			query="SELECT * FROM sensor_value_distance WHERE idsensor = "
+					+ routingContext.request().getParam("idSensor");
 		}else {
-			if(idSensor==-1) {
 			query="SELECT * FROM sensor_value_distance WHERE timestamp > "
 					+ routingContext.request().getParam("timestamp") + " AND idsensor = "
 					+ routingContext.request().getParam("idSensor");
-			}else {
-				query="SELECT * FROM sensor_value_distance WHERE timestamp > "
-						+ routingContext.request().getParam("timestamp") + " AND idsensor = "
-						+ idSensor;
-			}
 		}
 		mySQLPool.query(query, res -> {
 				if (res.succeeded()) {
 					
 					RowSet<Row> resultSet = res.result();
-					System.out.println("dEl número de elementos obtenidos es " + resultSet.size());
+					System.out.println("El número de elementos obtenidos es " + resultSet.size());
 					JsonArray result = new JsonArray();
 					
 					for (Row row : resultSet) {
@@ -317,7 +282,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 								row.getLong("timestamp"))));
 					}
 					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-					.end(result.encodePrettily());
+						.end(result.encodePrettily());
 					}else {
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 						.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
@@ -325,7 +290,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 			});
 	}
 	
-	private void getActuatorValues(RoutingContext routingContext) {
+	private void getActuatorValues(RoutingContext routingContext) { //Similar a getSensorValues pero para actuadores
 
 		mySQLPool.query("SELECT * FROM actuator WHERE idactuator = " + routingContext.request().getParam("idActuator"), 
 				res -> {
@@ -416,43 +381,50 @@ public class DatabaseVerticle extends AbstractVerticle{
 			});
 	}
 	
-	/*
-	private void getSensorValuesByDevice(RoutingContext routingContext) {
-		mySQLPool.query("SELECT * FROM sensor WHERE iddevice = " + routingContext.request().getParam("idDevice"), 
-				res -> {
-					if (res.succeeded()) {	
-						RowSet<Row> resultSet = res.result();
-						System.out.println("El número de elementos obtenidos es " + resultSet.size());
-						for (Row row : resultSet) {
-							
-							switch(row.getString("name")) {
-								case "Location":
-									getLocation(routingContext, row.getInteger("idsensor"));break;
-								
-								case "Pressure":
-									getPressure(routingContext, row.getInteger("idsensor"));break;
-									
-								case "Sound":
-									getSound(routingContext, row.getInteger("idsensor"));break;
-									
-								case "Distance":
-									getDistance(routingContext, row.getInteger("idsensor"));break;
-							}
-						}
-					}else{
+	private void putUser(RoutingContext routingContext) { //Actualiza un usuario
+		User user = Json.decodeValue(routingContext.getBodyAsString(), User.class);
+		mySQLPool.preparedQuery(
+				"UPDATE user SET name = ?, password = ?, birthdate = ?, city = ? WHERE iduser = ?",
+				Tuple.of(user.getName(), user.getPassword(), user.getBirthdate(),
+						user.getCity(), routingContext.request().getParam("idUser")),
+				handler -> {
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(user).encodePrettily());
+					} else {
+						System.out.println(handler.cause().toString());
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
-							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+								.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
 					}
 				});
 	}
-*/	
-	
+
+	private void putDevice(RoutingContext routingContext) { //Actualiza un dispositivo
+		Device device = Json.decodeValue(routingContext.getBodyAsString(), Device.class);
+		mySQLPool.preparedQuery(
+				"UPDATE device SET dog = ? WHERE iddevice = ?",
+				Tuple.of(device.getDog(), routingContext.request().getParam("idDevice")),
+				handler -> {
+					if (handler.succeeded()) {
+						System.out.println(handler.result().rowCount());
+						
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+								.end(JsonObject.mapFrom(device).encodePrettily());
+					} else {
+						System.out.println(handler.cause().toString());
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+								.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
+					}
+				});
+	}
 	
 	private void postUserInfo(RoutingContext routingContext) {
 		User user = Json.decodeValue(routingContext.getBodyAsString(), User.class);	
 		
 		mySQLPool.preparedQuery("INSERT INTO user (name, password, birthdate, City) VALUES (?,?,?,?)",
-				Tuple.of(user.getName(), user.getPassword(), user.getCity(), user.getCity()),
+				Tuple.of(user.getName(), user.getPassword(), user.getBirthdate(), user.getCity()),
 				handler -> {
 					
 					if (handler.succeeded()) {
@@ -467,6 +439,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 					}
 				});
 	}
+	
 	private void postDeviceInfo(RoutingContext routingContext) {
 		Device device = Json.decodeValue(routingContext.getBodyAsString(), Device.class);	
 		
@@ -520,7 +493,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 				});
 	}
 	
-	private void postSensorValues(RoutingContext routingContext) {                                                  //inserta en la base de datos los datos de un unico sensor elegido en la URL 
+	private void postSensorValues(RoutingContext routingContext) { //inserta en la base de datos los datos de un unico sensor elegido en la URL 
  
 		mySQLPool.query("SELECT * FROM sensor WHERE idsensor = " + routingContext.request().getParam("idSensor"), 
 				resAux -> {
@@ -531,23 +504,20 @@ public class DatabaseVerticle extends AbstractVerticle{
 
 							switch(row.getString("name")) {
 							
-							case "Location":
-								postLocation(routingContext);break;
+								case "Location":
+									postLocation(routingContext);break;
+									
+								case "Pressure":
+									postPressure(routingContext);break;
+									
+								case "Sound":
+									postSound(routingContext);break;
 								
-							case "Pressure":
-								postPressure(routingContext);break;
-								
-							case "Sound":
-								postSound(routingContext);break;
-							
-							case "Distance":
-								postDistance(routingContext);break;
-								
+								case "Distance":
+									postDistance(routingContext);break;
+									
 							}
-							
 						}
-						
-						
 					}else {
 						System.out.println("you're into resAux not succeeded");
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
@@ -556,11 +526,11 @@ public class DatabaseVerticle extends AbstractVerticle{
 				});
 		
 	}
+	
 	private void postLocation(RoutingContext routingContext) {
 		Location location = Json.decodeValue(routingContext.getBodyAsString(), Location.class);	
-		
 		mySQLPool.preparedQuery("INSERT INTO sensor_value_location (value_x, value_y, timestamp, idsensor) VALUES (?,?,?,?)",
-				Tuple.of(location.getX(), location.getY(), location.getTimestamp(),
+				Tuple.of(location.getX(), location.getY(), System.currentTimeMillis(),
 						routingContext.request().getParam("idSensor")),
 				handler -> {
 					
@@ -576,11 +546,12 @@ public class DatabaseVerticle extends AbstractVerticle{
 					}
 				});
 	}
+	
 	private void postPressure(RoutingContext routingContext) {
 		Pressure pressure = Json.decodeValue(routingContext.getBodyAsString(), Pressure.class);	
 		
 		mySQLPool.preparedQuery("INSERT INTO sensor_value_basic (value, timestamp, idsensor) VALUES (?,?,?)",
-				Tuple.of(pressure.getValue(), pressure.getTimestamp(),
+				Tuple.of(pressure.getValue(), System.currentTimeMillis(),
 						routingContext.request().getParam("idSensor")),
 				handler -> {
 					
@@ -596,11 +567,12 @@ public class DatabaseVerticle extends AbstractVerticle{
 					}
 				});
 	}
+		
 	private void postSound(RoutingContext routingContext) {
 		Sound sound = Json.decodeValue(routingContext.getBodyAsString(), Sound.class);	
 		
 		mySQLPool.preparedQuery("INSERT INTO sensor_value_basic (value, timestamp, idsensor) VALUES (?,?,?)",
-				Tuple.of(sound.getDecibels(), sound.getTimestamp(),
+				Tuple.of(sound.getDecibels(), System.currentTimeMillis(),
 						routingContext.request().getParam("idSensor")),
 				handler -> {
 					
@@ -616,11 +588,12 @@ public class DatabaseVerticle extends AbstractVerticle{
 					}
 				});
 	}
+	
 	private void postDistance(RoutingContext routingContext) {
 		Distance distance = Json.decodeValue(routingContext.getBodyAsString(), Distance.class);	
 		
 		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (distance_to_door, is_inside, timestamp, idsensor) VALUES (?,?,?,?)",
-				Tuple.of(distance.getDistance_to_door(), distance.getIs_inside(), distance.getTimestamp(),
+				Tuple.of(distance.getDistance_to_door(), distance.getIs_inside(), System.currentTimeMillis(),
 						routingContext.request().getParam("idSensor")),
 				handler -> {
 					
@@ -637,7 +610,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 				});
 	}
 
-	private void postActuatorValues(RoutingContext routingContext) {                                                 //inserta en la base de datos los datos de un unico actuador elegido en la URL
+	private void postActuatorValues(RoutingContext routingContext) { //inserta en la base de datos los datos de un unico actuador elegido en la URL
 
 		mySQLPool.query("SELECT * FROM actuator WHERE idactuator = " + routingContext.request().getParam("idActuator"), 
 				res -> {
@@ -656,19 +629,18 @@ public class DatabaseVerticle extends AbstractVerticle{
 
 							}
 						}
-						
 					}else{
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
 					}
 				});
 	}
+	
 	private void postLed(RoutingContext routingContext){
 		Led led = Json.decodeValue(routingContext.getBodyAsString(), Led.class);	
-		
-		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (value, timestamp, idactuator, length, mode) VALUES (?,?,?,?,?)",
-				Tuple.of(led.getLuminosity(), led.getTimestamp(), led.getTimestamp(),
-						routingContext.request().getParam("idSensor"), led.getLength(), led.getMode()),
+		mySQLPool.preparedQuery("INSERT INTO actuator_value_basic (value, timestamp, idactuator, length, mode) VALUES (?,?,?,?,?)",
+				Tuple.of(led.getLuminosity(), System.currentTimeMillis(),
+						routingContext.request().getParam("idActuator"), led.getLength(), led.getMode()),
 				handler -> {
 					
 					if (handler.succeeded()) {
@@ -684,12 +656,13 @@ public class DatabaseVerticle extends AbstractVerticle{
 				});
 		
 	}
+	
 	private void postVibration(RoutingContext routingContext){
 		Vibration vibration = Json.decodeValue(routingContext.getBodyAsString(), Vibration.class);	
 		
-		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (value, timestamp, idactuator, length, mode) VALUES (?,?,?,?,?)",
-				Tuple.of(vibration.getIntensity(), vibration.getTimestamp(), vibration.getTimestamp(),
-						routingContext.request().getParam("idSensor"), vibration.getLength(), vibration.getMode()),
+		mySQLPool.preparedQuery("INSERT INTO actuator_value_basic (value, timestamp, idactuator, length, mode) VALUES (?,?,?,?,?)",
+				Tuple.of(vibration.getIntensity(), System.currentTimeMillis(),
+						routingContext.request().getParam("idActuator"), vibration.getLength(), vibration.getMode()),
 				handler -> {
 					
 					if (handler.succeeded()) {
@@ -722,6 +695,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 					}
 				});
 	}
+	
 	private void deleteDeviceInfo(RoutingContext routingContext) {
 		
 		mySQLPool.query("DELETE FROM device WHERE iddevice =  " + routingContext.request().getParam("idDevice"),
@@ -740,7 +714,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 					}
 				});
 	}
-	
 
 }
 
