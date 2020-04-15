@@ -104,4 +104,3 @@ Para estas peticiones hemos usado URLs intuitivas y cortas. La nomenclatura es �
 \-     Para los nuevos usuarios o dispositivos, en lugar de ‘: (id)’ usamos “new”, ya que los parámetros se los pasaremos todos en el cuerpo (“new” no sería necesario, puesto que sin él no tendríamos problemas tampoco, pero lo mantenemos para hacerlo más intuitivo).
 
 Por último, en cuanto al cuerpo de las peticiones para los métodos POST y PUT, simplemente usamos un JSON para las columnas en la base de datos, aunque es necesario aclarar que el cuerpo debe contener todos los atributos, de lo contrario no será efectiva la petición. Esto provoca que debamos introducir también el id en el cuerpo, el cual será ignorado puesto que, en los POST, la BBDD es quien lo asigna, y en los PUT se toma el dato pasado por la URL. 
-
