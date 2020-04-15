@@ -66,7 +66,7 @@ En caso de disponer del suficiente tiempo, se tratará de implementar una app pa
 
 ### **Base de datos**
 
-![](Doge-power Diagrama UML.png)
+![](https://github.com/alealclag/Doge-Power/blob/Modificaciones-Ale/Doge-power%20Diagrama%20UML.png)
 
 La base de datos diseñada para nuestro proyecto es relativamente simple, puesto que la única información que almacenaremos será la de los usuarios, dispositivos, sensores y actuadores. Para ello, hemos creado una tabla para cada uno, excepto para los dos últimos, que presentan tablas para la información del sensor/actuador, y por separado tablas para los valores. Estos, por regla general, solo precisan del id del sensor, el valor y el timestamp, pero luego existen otros distintos, como es por ejemplo la ubicación, que precisa de dos coordenadas, además de otras extras. El resultado es el siguiente diagrama UML:
 
@@ -104,3 +104,4 @@ Para estas peticiones hemos usado URLs intuitivas y cortas. La nomenclatura es �
 \-     Para los nuevos usuarios o dispositivos, en lugar de ‘: (id)’ usamos “new”, ya que los parámetros se los pasaremos todos en el cuerpo (“new” no sería necesario, puesto que sin él no tendríamos problemas tampoco, pero lo mantenemos para hacerlo más intuitivo).
 
 Por último, en cuanto al cuerpo de las peticiones para los métodos POST y PUT, simplemente usamos un JSON para las columnas en la base de datos, aunque es necesario aclarar que el cuerpo debe contener todos los atributos, de lo contrario no será efectiva la petición. Esto provoca que debamos introducir también el id en el cuerpo, el cual será ignorado puesto que, en los POST, la BBDD es quien lo asigna, y en los PUT se toma el dato pasado por la URL. 
+
