@@ -75,3 +75,32 @@ La base de datos diseñada para nuestro proyecto es relativamente simple, puesto
 
 Para casi todas las tablas hemos usado solo atributos básicos con el objetivo de obtener una base de datos simple y que no nos lleve una gran cantidad de tiempo trabajar con ella. Como hemos indicado anteriormente, para sensor y actuator tenemos atributos tales como el dispositivo al que pertenecen, el nombre del sensor/actuador (pressure, led, etc.) y el tipo. Con el tipo nos referimos a si es básico (sensor/actuador, valor y timestamp) o no, que en nuestro caso son el tipo Location, ya que estos sensores recogen el valor de las coordenadas en x e y, y Distance, que además de recoger el valor de la distancia, también recoge si el dispositivo se encuentra dentro o fuera de la zona, que suele ser una casa, de ahí el nombre del atributo “distance_to_door”.
 
+### **API REST**
+
+En el diseño de la API REST principalmente hemos creado funciones básicas que nos conecten con la base de datos, ya que tras analizar varias veces el proyecto, no hemos visto necesaria la creación de ninguna función especial. En resumen, nuestra API REST está formada por:
+
+·     Métodos GET:
+
+Hemos creado un método GET para cada tabla. Para evitar un código excesivo, hemos unificado la función para obtención de los valores de los sensores (también para los actuadores) independientemente del tipo de sensor, puesto que, al haber tres tipos distintos, necesitamos tres consultas distintas, pero con un simple switch-case según el tipo, se ha solucionado. Además, tanto para los valores de sensores como para los de actuadores hemos añadido la opción de filtrar mediante timestamp, lo cual es realizable mediante la misma función, ya que esta comprueba si existe el parámetro de timestamp, y dependiendo del caso, la consulta difiere. También hemos creado una función que nos devuelve todos los dispositivos pertenecientes a un usuario dado.
+
+·    Métodos POST:
+
+Para insertar nuevos elementos hemos usado los métodos POST. Uno para cada tabla, excepto para device, actuator y sensor, ya que, creando un dispositivo, creamos automáticamente sus sensores y actuadores, ya que no tiene sentido que este uno se genere sin los otros.
+
+·    Métodos PUT:
+
+Hemos usado los métodos PUT para actualizar, por lo que solo han sido necesarios para actualizar los datos de usuario y del dispositivo.
+
+·    Métodos DELETE:
+
+Al igual que los PUT, solo son necesarios para eliminar usuarios y dispositivos, puesto que no tiene sentido eliminar sensores o actuadores solo, y el historial de valores no puede modificarse.
+
+Para estas peticiones hemos usado URLs intuitivas y cortas. La nomenclatura es “/api/(tipo de elemento)/: (id)” independientemente del tipo de petición, puesto que esto no supone un problema, pero para algunas peticiones es distinta:
+
+\-     Para obtener los dispositivos de un usuario, en ‘(tipo de elemento)’ colocamos “devicesOf”.
+
+\-     Cuando tratamos con los valores de los sensores, la nomenclatura es: “/api/(sensor o actuator)/values/: (id)”.
+
+\-     Para los nuevos usuarios o dispositivos, en lugar de ‘: (id)’ usamos “new”, ya que los parámetros se los pasaremos todos en el cuerpo (“new” no sería necesario, puesto que sin él no tendríamos problemas tampoco, pero lo mantenemos para hacerlo más intuitivo).
+
+Por último, en cuanto al cuerpo de las peticiones para los métodos POST y PUT, simplemente usamos un JSON para las columnas en la base de datos, aunque es necesario aclarar que el cuerpo debe contener todos los atributos, de lo contrario no será efectiva la petición. Esto provoca que debamos introducir también el id en el cuerpo, el cual será ignorado puesto que, en los POST, la BBDD es quien lo asigna, y en los PUT se toma el dato pasado por la URL. 
