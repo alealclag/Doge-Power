@@ -66,7 +66,7 @@ En caso de disponer del suficiente tiempo, se tratará de implementar una app pa
 
 ### **Base de datos**
 
-![](Doge-power Diagrama UML.png)
+![](https://github.com/alealclag/Doge-Power/blob/Modificaciones-Ale/Doge-power%20Diagrama%20UML.png)
 
 La base de datos diseñada para nuestro proyecto es relativamente simple, puesto que la única información que almacenaremos será la de los usuarios, dispositivos, sensores y actuadores. Para ello, hemos creado una tabla para cada uno, excepto para los dos últimos, que presentan tablas para la información del sensor/actuador, y por separado tablas para los valores. Estos, por regla general, solo precisan del id del sensor, el valor y el timestamp, pero luego existen otros distintos, como es por ejemplo la ubicación, que precisa de dos coordenadas, además de otras extras. El resultado es el siguiente diagrama UML:
 
