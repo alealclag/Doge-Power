@@ -1,7 +1,5 @@
 package types;
 
-import java.util.Calendar;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Led {
@@ -11,9 +9,9 @@ public class Led {
 	float luminosity;
 	float length;
 	long timestamp;
-	
 
-	public Led(@JsonProperty("id") int id, @JsonProperty("mode") int mode, @JsonProperty("luminosity") float luminosity, @JsonProperty("length") float length, @JsonProperty("timestamp") long timestamp) {
+	public Led(@JsonProperty("id") int id, @JsonProperty("mode") int mode, @JsonProperty("luminosity") float luminosity,
+			@JsonProperty("length") float length, @JsonProperty("timestamp") Long timestamp) {
 		super();
 		this.id=id;
 		this.mode = mode;
@@ -30,7 +28,7 @@ public class Led {
 		
 		this.timestamp = timestamp;
 	}
-
+	
 	public int getId() {
 		return id;
 	}

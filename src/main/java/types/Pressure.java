@@ -14,6 +14,7 @@ public class Pressure {
 		this.value = value;
 		this.timestamp = timestamp;
 	}
+	
 	public int getId() {
 		return id;
 	}

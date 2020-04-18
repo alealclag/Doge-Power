@@ -9,15 +9,15 @@ public class Location {
 	Float y;
 	Long timestamp;
 	
-	
-	
-	public Location(@JsonProperty("id") Integer id, @JsonProperty("x") Float x, @JsonProperty("y") Float y, @JsonProperty("timestamp") Long timestamp) {
+	public Location(@JsonProperty("id") Integer id, @JsonProperty("x") Float x, @JsonProperty("y") Float y,
+			@JsonProperty("timestamp") Long timestamp) {
 		super();
 		this.id = id;
 		this.x = x;
 		this.y = y;
 		this.timestamp = timestamp;
 	}
+	
 	public int getId() {
 		return id;
 	}
