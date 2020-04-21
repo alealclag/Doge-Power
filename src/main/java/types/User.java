@@ -1,17 +1,19 @@
 package types;
 
+import java.time.LocalDate;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class User {
 
-	int id;
+	String id;
 	String name;
 	String password;
-	Long birthdate;
+	LocalDate birthdate;
 	String city;
 	
-	public User(@JsonProperty("iduser") int id, @JsonProperty("name") String name, 
-			@JsonProperty("password") String password, @JsonProperty("birthdate") Long birthdate, 
+	public User(@JsonProperty("iduser") String id, @JsonProperty("name") String name, 
+			@JsonProperty("password") String password, @JsonProperty("birthdate") LocalDate birthdate, 
 			@JsonProperty("city") String city) {
 		super();
 		this.id = id;
@@ -21,11 +23,11 @@ public class User {
 		this.city = city;
 	}
 
-	public int getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
@@ -45,11 +47,11 @@ public class User {
 		this.password = password;
 	}
 
-	public Long getBirthdate() {
+	public LocalDate getBirthdate() {
 		return birthdate;
 	}
 
-	public void setBirthdate(Long birthdate) {
+	public void setBirthdate(LocalDate birthdate) {
 		this.birthdate = birthdate;
 	}
 
@@ -67,7 +69,7 @@ public class User {
 		int result = 1;
 		result = prime * result + ((birthdate == null) ? 0 : birthdate.hashCode());
 		result = prime * result + ((city == null) ? 0 : city.hashCode());
-		result = prime * result + id;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((password == null) ? 0 : password.hashCode());
 		return result;
@@ -92,7 +94,10 @@ public class User {
 				return false;
 		} else if (!city.equals(other.city))
 			return false;
-		if (id != other.id)
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
 		if (name == null) {
 			if (other.name != null)
@@ -106,6 +111,7 @@ public class User {
 			return false;
 		return true;
 	}
+
 	
 	
 }
