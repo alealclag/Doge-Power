@@ -73,10 +73,10 @@ public class DatabaseVerticle extends AbstractVerticle{
 						JsonArray result = new JsonArray();
 						
 						for (Row row : resultSet) {
-							result.add(JsonObject.mapFrom(new User(row.getInteger("iduser"),
+							result.add(JsonObject.mapFrom(new User(row.getString("iduser"),
 									row.getString("name"),
 									row.getString("password"),
-									row.getLong("birthdate"),
+									row.getLocalDate("birthdate"),
 									row.getString("city"))));
 							
 						}
