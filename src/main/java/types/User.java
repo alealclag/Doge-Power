@@ -9,11 +9,11 @@ public class User {
 	String id;
 	String name;
 	String password;
-	LocalDate birthdate;
+	String birthdate;
 	String city;
 	
 	public User(@JsonProperty("iduser") String id, @JsonProperty("name") String name, 
-			@JsonProperty("password") String password, @JsonProperty("birthdate") LocalDate birthdate, 
+			@JsonProperty("password") String password, @JsonProperty("birthdate") String birthdate, 
 			@JsonProperty("city") String city) {
 		super();
 		this.id = id;
@@ -47,11 +47,11 @@ public class User {
 		this.password = password;
 	}
 
-	public LocalDate getBirthdate() {
+	public String getBirthdate() {
 		return birthdate;
 	}
 
-	public void setBirthdate(LocalDate birthdate) {
+	public void setBirthdate(String birthdate) {
 		this.birthdate = birthdate;
 	}
 

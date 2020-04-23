@@ -76,7 +76,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 							result.add(JsonObject.mapFrom(new User(row.getString("iduser"),
 									row.getString("name"),
 									row.getString("password"),
-									row.getLocalDate("birthdate"),
+									row.getString("birthdate"),
 									row.getString("city"))));
 							
 						}
@@ -423,8 +423,8 @@ public class DatabaseVerticle extends AbstractVerticle{
 	private void postUserInfo(RoutingContext routingContext) {
 		User user = Json.decodeValue(routingContext.getBodyAsString(), User.class);	
 		
-		mySQLPool.preparedQuery("INSERT INTO user (name, password, birthdate, City) VALUES (?,?,?,?)",
-				Tuple.of(user.getName(), user.getPassword(), user.getBirthdate(), user.getCity()),
+		mySQLPool.preparedQuery("INSERT INTO user (iduser, name, password, birthdate, City) VALUES (?,?,?,?,?)",
+				Tuple.of(user.getId(),user.getName(), user.getPassword(), user.getBirthdate(), user.getCity()),
 				handler -> {
 					
 					if (handler.succeeded()) {
