@@ -40,6 +40,8 @@ public class DatabaseVerticle extends AbstractVerticle{
 		});
 
 		router.get("/api/user/:idUser").handler(this::getUserInfo);
+		router.get("/api/login").handler(this::getLogin);
+		
 		router.get("/api/devicesOf/:idUser").handler(this::getDeviceInfoByUser);
 		router.get("/api/device/:idDevice").handler(this::getDeviceInfo);
 		
@@ -85,6 +87,19 @@ public class DatabaseVerticle extends AbstractVerticle{
 						}else {
 							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+					}
+				});
+	}
+	
+	private void getLogin(RoutingContext routingContext) { //Realiza una consulta con el usuario y contraseña pasados por el cuerpo. Si hay coincidencias, devuelve OK, si no, fallo de autentificación
+		mySQLPool.query( "SELECT * FROM user WHERE iduser = " + routingContext.getBodyAsJson().getInteger("iduser") + " AND password = " + routingContext.getBodyAsJson().getString("password"), 
+				res -> {
+					if (res.succeeded()) {	
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+						.end("Bienvenido!");
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end("Usuario y/o contraseña incorrectos");
 					}
 				});
 	}
@@ -423,8 +438,8 @@ public class DatabaseVerticle extends AbstractVerticle{
 	private void postUserInfo(RoutingContext routingContext) {
 		User user = Json.decodeValue(routingContext.getBodyAsString(), User.class);	
 		
-		mySQLPool.preparedQuery("INSERT INTO user (iduser, name, password, birthdate, City) VALUES (?,?,?,?,?)",
-				Tuple.of(user.getId(),user.getName(), user.getPassword(), user.getBirthdate(), user.getCity()),
+		mySQLPool.preparedQuery("INSERT INTO user (name, password, birthdate, City) VALUES (?,?,?,?)",
+				Tuple.of(user.getName(), user.getPassword(), user.getBirthdate(), user.getCity()),
 				handler -> {
 					
 					if (handler.succeeded()) {
