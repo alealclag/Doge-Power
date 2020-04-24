@@ -94,7 +94,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 	private void getLogin(RoutingContext routingContext) { //Realiza una consulta con el usuario y contraseña pasados por el cuerpo. Si hay coincidencias, devuelve OK, si no, fallo de autentificación
 		mySQLPool.query( "SELECT * FROM user WHERE iduser = " + routingContext.getBodyAsJson().getInteger("iduser") + " AND password = " + routingContext.getBodyAsJson().getString("password"), 
 				res -> {
-					if (res.succeeded()) {	
+					if (res.succeeded() && res.result().size() == 1) {	
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 						.end("Bienvenido!");
 						}else {
