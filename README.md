@@ -104,3 +104,13 @@ Para estas peticiones hemos usado URLs intuitivas y cortas. La nomenclatura es �
 \-     Para los nuevos usuarios o dispositivos, en lugar de ‘: (id)’ usamos “new”, ya que los parámetros se los pasaremos todos en el cuerpo (“new” no sería necesario, puesto que sin él no tendríamos problemas tampoco, pero lo mantenemos para hacerlo más intuitivo).
 
 Por último, en cuanto al cuerpo de las peticiones para los métodos POST y PUT, simplemente usamos un JSON para las columnas en la base de datos, aunque es necesario aclarar que el cuerpo debe contener todos los atributos, de lo contrario no será efectiva la petición. Esto provoca que debamos introducir también el id en el cuerpo, el cual será ignorado puesto que, en los POST, la BBDD es quien lo asigna, y en los PUT se toma el dato pasado por la URL. 
+
+
+
+### **MQTT**
+
+El uso de MQTT en nuestro proyecto es corto pero importante, ya que su uso es necesario para un sistema de actuadores eficiente. En nuestro caso, solo nos será necesario el uso de dos canales, uno por actuador, además siendo los dos similares en atributos, por lo que se simplifica aún más.
+
+Para MQTT tendremos dos clases: la primera el servidor, cuya estructura es genérica para todos los proyectos en la totalidad del código prácticamente. La estructura de la que hablamos se trata de una clase con los métodos para iniciar e inicializar el servidor y para las acciones como clientes de conectarnos, desconectarnos, suscribirnos y darnos de baja. El único punto del que debemos fijarnos es en los canales, pues es aquí donde debemos especificar de qué canales haremos uso; en nuestro caso, estos son led y vibración.
+
+El cliente actualmente es un modelo que autogenera valores para pruebas, pues el modelo que debemos usar dependerá de los actuadores. Aún sí, nos sirve para poder observar su funcionamiento. Es preciso inicializar las opciones del cliente, pues existen varios parámetros que, según un valor u otro, nuestro cliente trabajará de distinta forma; entre estos parámetros están el Timeout, usuario y contraseña, id del cliente, etc. Como ya hemos dicho, nuestro código es un prototipo hasta que podamos avanzar en la parte hardware, por lo que hemos implementado clientes automáticos que se suscriben a los canales y cada poco segundos publican información en los canales; que en estos casos se trata de objetos de tipo led y vibración, es decir, nuestros actuadores.
