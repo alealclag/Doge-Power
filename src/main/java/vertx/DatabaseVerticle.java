@@ -40,10 +40,11 @@ public class DatabaseVerticle extends AbstractVerticle{
 		});
 
 		router.get("/api/user/:idUser").handler(this::getUserInfo);
-		router.get("/api/login").handler(this::getLogin);
+		router.post("/api/login").handler(this::getLogin);
 		
 		router.get("/api/devicesOf/:idUser").handler(this::getDeviceInfoByUser);
 		router.get("/api/device/:idDevice").handler(this::getDeviceInfo);
+		router.get("/api/sensorsOf/:idDevice").handler(this::getSensorInfoByDevice);
 		
 		router.get("/api/sensor/values/:idSensor/:timestamp").handler(this::getSensorValues);
 		router.get("/api/sensor/values/:idSensor").handler(this::getSensorValues);
@@ -67,7 +68,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 	}
 
 	private void getUserInfo(RoutingContext routingContext) {
-		mySQLPool.query("SELECT * FROM user WHERE iduser = " + routingContext.request().getParam("idUser"), 
+		mySQLPool.query("SELECT * FROM user WHERE iduser = '" + routingContext.request().getParam("idUser") + "'", 
 				res -> {
 					if (res.succeeded()) {	
 						RowSet<Row> resultSet = res.result();
@@ -92,14 +93,20 @@ public class DatabaseVerticle extends AbstractVerticle{
 	}
 	
 	private void getLogin(RoutingContext routingContext) { //Realiza una consulta con el usuario y contraseña pasados por el cuerpo. Si hay coincidencias, devuelve OK, si no, fallo de autentificación
-		mySQLPool.query( "SELECT * FROM user WHERE iduser = " + routingContext.getBodyAsJson().getInteger("iduser") + " AND password = " + routingContext.getBodyAsJson().getString("password"), 
+		mySQLPool.query( "SELECT * FROM user WHERE iduser = '" + routingContext.getBodyAsJson().getString("iduser") + 
+				"' AND password = '" + routingContext.getBodyAsJson().getString("password") + "'", 
 				res -> {
-					if (res.succeeded() && res.result().size() == 1) {	
-						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-						.end("Bienvenido!");
+					if (res.succeeded()) {
+						if(res.result().size() == 1) {
+							routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+							.end("Bienvenido!");
 						}else {
-							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							routingContext.response().setStatusCode(201).putHeader("content-type", "application/json")
 							.end("Usuario y/o contraseña incorrectos");
+						}
+					}else {
+						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+						.end("Fallo al conectar");
 					}
 				});
 	}
@@ -126,7 +133,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 	}
 
 	private void getDeviceInfoByUser(RoutingContext routingContext) {  //Devuelve la información de todos los dispositivos asociados a un usuario
-		mySQLPool.query("SELECT * FROM device WHERE iduser = " + routingContext.request().getParam("idUser"), 
+		mySQLPool.query("SELECT * FROM device WHERE iduser = '" + routingContext.request().getParam("idUser") + "'", 
 				res -> {
 					if (res.succeeded()) {	
 						RowSet<Row> resultSet = res.result();
@@ -136,6 +143,27 @@ public class DatabaseVerticle extends AbstractVerticle{
 						for (Row row : resultSet) {
 							result.add(JsonObject.mapFrom(new Device(row.getInteger("iddevice"),
 									row.getString("dog"))));
+						}
+						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
+						.end(result.encodePrettily());
+						}else {
+							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
+							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
+					}
+				});
+	}
+	
+	private void getSensorInfoByDevice(RoutingContext routingContext) {  //Devuelve la información de todos los dispositivos asociados a un usuario
+		mySQLPool.query("SELECT * FROM sensor WHERE iddevice = " + routingContext.request().getParam("idDevice"), 
+				res -> {
+					if (res.succeeded()) {	
+						RowSet<Row> resultSet = res.result();
+						System.out.println("El número de elementos obtenidos es " + resultSet.size());
+						JsonArray result = new JsonArray();
+						
+						for (Row row : resultSet) {
+							result.add(JsonObject.mapFrom(new Sensor(row.getInteger("iddevice"),
+									row.getInteger("idsensor"), row.getString("name"))));
 						}
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 						.end(result.encodePrettily());
