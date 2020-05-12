@@ -40,32 +40,30 @@ public class DatabaseVerticle extends AbstractVerticle{
 		});
 
 		router.get("/api/user/:idUser").handler(this::getUserInfo);
-		router.post("/api/login").handler(this::getLogin);
-		
 		router.get("/api/devicesOf/:idUser").handler(this::getDeviceInfoByUser);
+		
 		router.get("/api/device/:idDevice").handler(this::getDeviceInfo);
 		router.get("/api/sensorsOf/:idDevice").handler(this::getSensorInfoByDevice);
+		
 		router.get("/api/actuatorsOf/:idDevice").handler(this::getActuatorInfoByDevice);
-		
 		router.get("/api/sensor/values/:idSensor/:timestamp").handler(this::getSensorValues);
-		router.get("/api/sensor/values/:idSensor").handler(this::getSensorValues);
 		
+		router.get("/api/sensor/values/:idSensor").handler(this::getSensorValues);
 		router.get("/api/actuator/values/:idActuator/:timestamp").handler(this::getActuatorValues);
 		router.get("/api/actuator/values/:idActuator").handler(this::getActuatorValues);
 		
 		router.put("/api/user/:idUser").handler(this::putUser);
 		router.put("/api/device/:idDevice").handler(this::putDevice);
 
+		router.post("/api/login").handler(this::getLogin);
 		router.post("/api/user/new").handler(this::postUserInfo);
-		router.post("/api/device/new").handler(this::postDeviceInfo);
 		
+		router.post("/api/device/new").handler(this::postDeviceInfo);
 		router.post("/api/sensor/values/:idSensor").handler(this::postSensorValues);
 		router.post("/api/actuator/values/:idActuator").handler(this::postActuatorValues);
 		
 		router.delete("/api/user/:idUser").handler(this::deleteUserInfo);
 		router.delete("/api/device/:idDevice").handler(this::deleteDeviceInfo);
-
-	
 	}
 
 	private void getUserInfo(RoutingContext routingContext) {
