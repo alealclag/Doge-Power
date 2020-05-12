@@ -692,6 +692,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 
 							}
 						}
+						
 					}else{
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 							.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
