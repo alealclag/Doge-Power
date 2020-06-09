@@ -71,7 +71,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				res -> {
 					if (res.succeeded()) {	
 						RowSet<Row> resultSet = res.result();
-						System.out.println("El número de elementos obtenidos es " + resultSet.size());
 						JsonArray result = new JsonArray();
 						
 						for (Row row : resultSet) {
@@ -115,7 +114,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				res -> {
 					if (res.succeeded()) {	
 						RowSet<Row> resultSet = res.result();
-						System.out.println("El número de elementos obtenidos es " + resultSet.size());
 						JsonArray result = new JsonArray();
 						
 						for (Row row : resultSet) {
@@ -136,7 +134,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				res -> {
 					if (res.succeeded()) {	
 						RowSet<Row> resultSet = res.result();
-						System.out.println("El número de elementos obtenidos es " + resultSet.size());
 						JsonArray result = new JsonArray();
 						
 						for (Row row : resultSet) {
@@ -157,7 +154,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				res -> {
 					if (res.succeeded()) {	
 						RowSet<Row> resultSet = res.result();
-						System.out.println("El número de elementos obtenidos es " + resultSet.size());
 						JsonArray result = new JsonArray();
 						
 						for (Row row : resultSet) {
@@ -178,7 +174,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				res -> {
 					if (res.succeeded()) {	
 						RowSet<Row> resultSet = res.result();
-						System.out.println("El número de elementos obtenidos es " + resultSet.size());
 						JsonArray result = new JsonArray();
 						
 						for (Row row : resultSet) {
@@ -199,7 +194,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				res -> {
 					if (res.succeeded()) {	
 						RowSet<Row> resultSet = res.result();
-						System.out.println("El número de elementos obtenidos es " + resultSet.size());
 						for (Row row : resultSet) {
 							switch(row.getString("name")) {
 								case "Location":
@@ -210,9 +204,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 									
 								case "Sound":
 									getSound(routingContext);break;
-									
-								case "Distance":
-									getDistance(routingContext);break;
 							}
 						}
 					}else{
@@ -236,7 +227,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				if (res.succeeded()) {
 					
 					RowSet<Row> resultSet = res.result();
-					System.out.println("El número de elementos obtenidos es " + resultSet.size());
 					JsonArray result = new JsonArray();
 					
 					for (Row row : resultSet) {
@@ -270,7 +260,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				if (res.succeeded()) {
 							
 					RowSet<Row> resultSet = res.result();
-					System.out.println("El número de elementos obtenidos es " + resultSet.size());
 					JsonArray result = new JsonArray();
 							
 					for (Row row : resultSet) {
@@ -302,7 +291,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				if (res.succeeded()) {
 
 					RowSet<Row> resultSet = res.result();
-					System.out.println("El número de elementos obtenidos es " + resultSet.size());
 					JsonArray result = new JsonArray();
 
 					for (Row row : resultSet) {
@@ -320,46 +308,12 @@ public class DatabaseVerticle extends AbstractVerticle{
 			});
 	}
 	
-	private void getDistance(RoutingContext routingContext) {
-		String query;
-		if(routingContext.request().getParam("timestamp")==null) {
-			query="SELECT * FROM sensor_value_distance WHERE idsensor = "
-					+ routingContext.request().getParam("idSensor");
-		}else {
-			query="SELECT * FROM sensor_value_distance WHERE timestamp > "
-					+ routingContext.request().getParam("timestamp") + " AND idsensor = "
-					+ routingContext.request().getParam("idSensor");
-		}
-		mySQLPool.query(query, res -> {
-				if (res.succeeded()) {
-					
-					RowSet<Row> resultSet = res.result();
-					System.out.println("El número de elementos obtenidos es " + resultSet.size());
-					JsonArray result = new JsonArray();
-					
-					for (Row row : resultSet) {
-						
-						result.add(JsonObject.mapFrom(new Distance(row.getInteger("idsensor"),
-								row.getFloat("distance_to_door"),
-								row.getBoolean("isInside"),
-								row.getLong("timestamp"))));
-					}
-					routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-						.end(result.encodePrettily());
-					}else {
-						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
-						.end((JsonObject.mapFrom(res.cause()).encodePrettily()));
-				}
-			});
-	}
-	
 	private void getActuatorValues(RoutingContext routingContext) { //Similar a getSensorValues pero para actuadores
 
 		mySQLPool.query("SELECT * FROM actuator WHERE idactuator = " + routingContext.request().getParam("idActuator"), 
 				res -> {
 					if (res.succeeded()) {	
 						RowSet<Row> resultSet = res.result();
-						System.out.println("El número de elementos obtenidos es " + resultSet.size());
 						for (Row row : resultSet) {
 							switch(row.getString("name")) {
 								case "led":
@@ -391,7 +345,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 			if (res.succeeded()) {
 				
 				RowSet<Row> resultSet = res.result();
-				System.out.println("El número de elementos obtenidos es " + resultSet.size());
 				JsonArray result = new JsonArray();
 				
 				for (Row row : resultSet) {	
@@ -424,7 +377,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				if (res.succeeded()) {
 					
 					RowSet<Row> resultSet = res.result();
-					System.out.println("El número de elementos obtenidos es " + resultSet.size());
 					JsonArray result = new JsonArray();
 					
 					for (Row row : resultSet) {
@@ -452,12 +404,9 @@ public class DatabaseVerticle extends AbstractVerticle{
 						user.getCity(), routingContext.request().getParam("idUser")),
 				handler -> {
 					if (handler.succeeded()) {
-						System.out.println(handler.result().rowCount());
-						
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 								.end(JsonObject.mapFrom(user).encodePrettily());
 					} else {
-						System.out.println(handler.cause().toString());
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 								.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
 					}
@@ -471,12 +420,9 @@ public class DatabaseVerticle extends AbstractVerticle{
 				Tuple.of(device.getDog(), routingContext.request().getParam("idDevice")),
 				handler -> {
 					if (handler.succeeded()) {
-						System.out.println(handler.result().rowCount());
-						
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 								.end(JsonObject.mapFrom(device).encodePrettily());
 					} else {
-						System.out.println(handler.cause().toString());
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 								.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
 					}
@@ -491,7 +437,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				handler -> {
 					
 					if (handler.succeeded()) {
-						System.out.println(handler.result().rowCount());
 						
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 								.end(JsonObject.mapFrom(user).encodePrettily());
@@ -542,9 +487,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 											.end((JsonObject.mapFrom(handlerAux.cause()).encodePrettily()));
 									}
 								});
-								
-						System.out.println(handler.result().rowCount());
-						System.out.println(lastInsertId);
 						
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 								.end(JsonObject.mapFrom(device).encodePrettily());
@@ -575,14 +517,9 @@ public class DatabaseVerticle extends AbstractVerticle{
 									
 								case "Sound":
 									postSound(routingContext);break;
-								
-								case "Distance":
-									postDistance(routingContext);break;
-									
 							}
 						}
 					}else {
-						System.out.println("you're into resAux not succeeded");
 						routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
 							.end((JsonObject.mapFrom(resAux.cause()).encodePrettily()));
 					}
@@ -598,8 +535,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				handler -> {
 					
 					if (handler.succeeded()) {
-						System.out.println(handler.result().rowCount());
-						
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 								.end(JsonObject.mapFrom(location).encodePrettily());
 						
@@ -619,8 +554,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				handler -> {
 					
 					if (handler.succeeded()) {
-						System.out.println(handler.result().rowCount());
-						
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 								.end(JsonObject.mapFrom(pressure).encodePrettily());
 						
@@ -640,8 +573,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				handler -> {
 					
 					if (handler.succeeded()) {
-						System.out.println(handler.result().rowCount());
-						
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 								.end(JsonObject.mapFrom(sound).encodePrettily());
 						
@@ -652,27 +583,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				});
 	}
 	
-	private void postDistance(RoutingContext routingContext) {
-		Distance distance = Json.decodeValue(routingContext.getBodyAsString(), Distance.class);	
-		
-		mySQLPool.preparedQuery("INSERT INTO sensor_value_distance (distance_to_door, is_inside, timestamp, idsensor) VALUES (?,?,?,?)",
-				Tuple.of(distance.getDistance_to_door(), distance.getIs_inside(), System.currentTimeMillis(),
-						routingContext.request().getParam("idSensor")),
-				handler -> {
-					
-					if (handler.succeeded()) {
-						System.out.println(handler.result().rowCount());
-						
-						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
-								.end(JsonObject.mapFrom(distance).encodePrettily());
-						
-						}else {
-							routingContext.response().setStatusCode(401).putHeader("content-type", "application/json")
-							.end((JsonObject.mapFrom(handler.cause()).encodePrettily()));
-					}
-				});
-	}
-
 	private void postActuatorValues(RoutingContext routingContext) { //inserta en la base de datos los datos de un unico actuador elegido en la URL
 
 		mySQLPool.query("SELECT * FROM actuator WHERE idactuator = " + routingContext.request().getParam("idActuator"), 
@@ -708,8 +618,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				handler -> {
 					
 					if (handler.succeeded()) {
-						System.out.println(handler.result().rowCount());
-						
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 								.end(JsonObject.mapFrom(led).encodePrettily());
 						
@@ -730,8 +638,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				handler -> {
 					
 					if (handler.succeeded()) {
-						System.out.println(handler.result().rowCount());
-						
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 								.end(JsonObject.mapFrom(vibration).encodePrettily());
 						
@@ -747,9 +653,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 		mySQLPool.query("DELETE FROM user WHERE iduser =  " + routingContext.request().getParam("idUser"),
 				handler -> {
 					
-					if (handler.succeeded()) {
-						System.out.println(handler.result().rowCount());
-						
+					if (handler.succeeded()) {						
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 								.end("Usuario borrado correctamente");
 						
@@ -766,9 +670,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				handler -> {
 					
 					if (handler.succeeded()) {
-								
-						System.out.println(handler.result().rowCount());
-						
 						routingContext.response().setStatusCode(200).putHeader("content-type", "application/json")
 								.end("Dispositivo borrado correctamente");
 						
