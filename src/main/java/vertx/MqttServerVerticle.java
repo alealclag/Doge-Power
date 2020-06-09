@@ -94,7 +94,7 @@ public class MqttServerVerticle extends AbstractVerticle {
 				//System.out.println(message.payload().toString());
 				break;
 			case TOPIC_VIBR:
-				System.out.println("Info published");
+				System.out.println("Vibration published");
 				break;
 			}
 			for (MqttEndpoint subscribed: clients.get(message.topicName())) {

@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.19, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: doge power
+-- Host: 127.0.0.1    Database: doge-power
 -- ------------------------------------------------------
 -- Server version	8.0.19
 
@@ -124,7 +124,7 @@ CREATE TABLE `sensor` (
 
 LOCK TABLES `sensor` WRITE;
 /*!40000 ALTER TABLE `sensor` DISABLE KEYS */;
-INSERT INTO `sensor` VALUES (48,'basic',17,'Sound'),(49,'basic',17,'Pressure'),(50,'location',17,'Location'),(51,'distance',17,'Distance'),(52,'basic',18,'Sound'),(53,'basic',18,'Pressure'),(54,'location',18,'Location'),(55,'distance',18,'Distance'),(68,'Location',27,'Location'),(69,'Basic',27,'Pressure'),(70,'Basic',27,'Sound'),(71,'Distance',27,'Distance'),(72,'Location',28,'Location'),(73,'Basic',28,'Pressure'),(74,'Basic',28,'Sound'),(75,'Distance',28,'Distance'),(76,'Location',29,'Location'),(77,'Basic',29,'Pressure'),(78,'Basic',29,'Sound'),(79,'Distance',29,'Distance'),(84,'Location',31,'Location'),(85,'Basic',31,'Pressure'),(86,'Basic',31,'Sound'),(87,'Distance',31,'Distance'),(112,'Location',38,'Location'),(113,'Basic',38,'Pressure'),(114,'Basic',38,'Sound'),(115,'Distance',38,'Distance'),(120,'Location',40,'Location'),(121,'Basic',40,'Pressure'),(122,'Basic',40,'Sound'),(123,'Distance',40,'Distance');
+INSERT INTO `sensor` VALUES (48,'basic',17,'Sound'),(49,'basic',17,'Pressure'),(50,'location',17,'Location'),(52,'basic',18,'Sound'),(53,'basic',18,'Pressure'),(54,'location',18,'Location'),(68,'Location',27,'Location'),(69,'Basic',27,'Pressure'),(70,'Basic',27,'Sound'),(72,'Location',28,'Location'),(73,'Basic',28,'Pressure'),(74,'Basic',28,'Sound'),(76,'Location',29,'Location'),(77,'Basic',29,'Pressure'),(78,'Basic',29,'Sound'),(84,'Location',31,'Location'),(85,'Basic',31,'Pressure'),(86,'Basic',31,'Sound'),(112,'Location',38,'Location'),(113,'Basic',38,'Pressure'),(114,'Basic',38,'Sound'),(120,'Location',40,'Location'),(121,'Basic',40,'Pressure'),(122,'Basic',40,'Sound');
 /*!40000 ALTER TABLE `sensor` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -154,35 +154,6 @@ LOCK TABLES `sensor_value_basic` WRITE;
 /*!40000 ALTER TABLE `sensor_value_basic` DISABLE KEYS */;
 INSERT INTO `sensor_value_basic` VALUES (14,15,1,74),(16,17,1234,114),(17,32,2,74),(18,65,3,74),(19,75,4,74),(20,34,5,74),(21,345,1,73),(22,654,2,73),(23,765,3,73),(24,34,4,73),(25,65,5,73);
 /*!40000 ALTER TABLE `sensor_value_basic` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `sensor_value_distance`
---
-
-DROP TABLE IF EXISTS `sensor_value_distance`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `sensor_value_distance` (
-  `idsensor_value_distance` int NOT NULL AUTO_INCREMENT,
-  `distance_to_door` float NOT NULL,
-  `is_inside` tinyint NOT NULL,
-  `idsensor` int NOT NULL,
-  `timestamp` bigint NOT NULL,
-  PRIMARY KEY (`idsensor_value_distance`),
-  KEY `sensor_distance_sensor_idx` (`idsensor`),
-  CONSTRAINT `sensor_distance_sensor` FOREIGN KEY (`idsensor`) REFERENCES `sensor` (`idsensor`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sensor_value_distance`
---
-
-LOCK TABLES `sensor_value_distance` WRITE;
-/*!40000 ALTER TABLE `sensor_value_distance` DISABLE KEYS */;
-INSERT INTO `sensor_value_distance` VALUES (13,523,1,75,1),(14,26,0,75,2),(15,74,1,75,3),(16,84,0,75,4),(17,25,0,75,5);
-/*!40000 ALTER TABLE `sensor_value_distance` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -240,10 +211,6 @@ LOCK TABLES `user` WRITE;
 INSERT INTO `user` VALUES ('alalla','Alejandro Alcántara','12345','1999-03-17','Écija'),('enrcha','Kike Wapo','54321','1997-03-17','Álava'),('enrchagon','Enrique Chamber','54321','1998-03-14','Sevilla'),('hol','que tal','2345','1997-05-05','no'),('hola','Alejandro Alcántaraaaaa','54321','1703-10-10','ncaca'),('k karaho?','no se k pasa','kakita','1977-05-09','Cádiz'),('kike','hola','hola','2020-05-31','Álava'),('lamama','Isabel González de Quevedo','pipito','1962-08-05','Sevilla'),('perico','perico de los palotes','pepe','1905-09-14','Palencia');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Dumping routines for database 'doge power'
---
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -254,4 +221,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-05-12 14:02:16
+-- Dump completed on 2020-06-09 14:21:31

@@ -19,7 +19,10 @@ public class StartVerticle extends AbstractVerticle{
 		});
 		
 		vertx.deployVerticle(MqttServerVerticle.class.getName());
+<<<<<<< HEAD
 		vertx.deployVerticle(DatabaseVerticle.class.getName());
 		//vertx.deployVerticle(MqttClientVerticle.class.getName());
+=======
+>>>>>>> branch 'Modificaciones-Kike' of https://github.com/alealclag/Doge-Power
 	}
 }
