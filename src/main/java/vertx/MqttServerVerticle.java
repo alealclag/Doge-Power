@@ -91,7 +91,6 @@ public class MqttServerVerticle extends AbstractVerticle {
 			switch (topicName) {
 			case TOPIC_LED:
 				System.out.println("Luces published");
-				//System.out.println(message.payload().toString());
 				break;
 			case TOPIC_VIBR:
 				System.out.println("Vibration published");

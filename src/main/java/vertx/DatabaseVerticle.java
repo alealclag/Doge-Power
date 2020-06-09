@@ -74,6 +74,8 @@ public class DatabaseVerticle extends AbstractVerticle{
 		router.delete("/api/user/:idUser").handler(this::deleteUserInfo);
 		router.delete("/api/device/:idDevice").handler(this::deleteDeviceInfo);
 		
+		
+		//Creación del cliente MQTT para cuando hagamos POST en los actuadores
 		classInstanceId = this.hashCode() + "";
 		MqttClientOptions options = new MqttClientOptions();
 		options.setAutoKeepAlive(true);
@@ -554,7 +556,6 @@ public class DatabaseVerticle extends AbstractVerticle{
  
 		mySQLPool.query("SELECT * FROM sensor WHERE idsensor = " + routingContext.request().getParam("idSensor"), 
 				resAux -> {
-					System.out.println(resAux.result().rowCount());
 					if (resAux.succeeded()) {
 						RowSet<Row> resultSet = resAux.result();
 						
@@ -636,7 +637,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 				});
 	}
 	
-	private void postActuatorValues(RoutingContext routingContext) { //inserta en la base de datos los datos de un unico actuador elegido en la URL
+	private void postActuatorValues(RoutingContext routingContext) { //Inserta en la base de datos los datos de un unico actuador elegido en la URL y publica en MQTT
 
 		
 		mySQLPool.query("SELECT * FROM actuator WHERE idactuator = " + routingContext.request().getParam("idActuator"), 
