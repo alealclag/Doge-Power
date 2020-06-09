@@ -59,7 +59,7 @@ public class MqttClientVerticle extends AbstractVerticle {
 									Led led = new Led(0, 1, (float) 10.0, (float) 0.5, (long) 123459014);
 
 									mqttClient.publish(MqttServerVerticle.TOPIC_LED,
-											Buffer.buffer(Json.encodePrettily(led)), MqttQoS.AT_LEAST_ONCE, false, true);
+											Buffer.buffer(Json.encodePrettily(led)), MqttQoS.AT_LEAST_ONCE, false, false);
 
 								});
 							} else {
@@ -78,7 +78,7 @@ public class MqttClientVerticle extends AbstractVerticle {
 							Vibration vibration = new Vibration(0, 1, (float) 23.0, (float) 5.2, (long) 123459014);
 
 							mqttClient.publish(MqttServerVerticle.TOPIC_LED,
-									Buffer.buffer(Json.encodePrettily(vibration)), MqttQoS.AT_LEAST_ONCE, false, true);
+									Buffer.buffer(Json.encodePrettily(vibration)), MqttQoS.AT_LEAST_ONCE, false, false);
 						});
 
 					} else {
