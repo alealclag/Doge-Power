@@ -73,7 +73,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 		
 		router.delete("/api/user/:idUser").handler(this::deleteUserInfo);
 		router.delete("/api/device/:idDevice").handler(this::deleteDeviceInfo);
-<<<<<<< HEAD
 		
 		classInstanceId = this.hashCode() + "";
 		MqttClientOptions options = new MqttClientOptions();
@@ -117,10 +116,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 				System.out.println("Error: " + handler.result().code().toString());
 			}
 		});
-
-	
-=======
->>>>>>> branch 'Modificaciones-Kike' of https://github.com/alealclag/Doge-Power
 	}
 
 	private void getUserInfo(RoutingContext routingContext) {
