@@ -55,7 +55,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 		router.put("/api/user/:idUser").handler(this::putUser);
 		router.put("/api/device/:idDevice").handler(this::putDevice);
 
-		router.post("/api/login").handler(this::getLogin);
+		router.post("/api/login").handler(this::postLogin);
 		router.post("/api/user/new").handler(this::postUserInfo);
 		
 		router.post("/api/device/new").handler(this::postDeviceInfo);
@@ -91,7 +91,7 @@ public class DatabaseVerticle extends AbstractVerticle{
 				});
 	}
 	
-	private void getLogin(RoutingContext routingContext) { //Realiza una consulta con el usuario y contraseña pasados por el cuerpo. Si hay coincidencias, devuelve OK, si no, fallo de autentificación
+	private void postLogin(RoutingContext routingContext) { //Realiza una consulta con el usuario y contraseña pasados por el cuerpo. Si hay coincidencias, devuelve OK, si no, fallo de autentificación
 		mySQLPool.query( "SELECT * FROM user WHERE iduser = '" + routingContext.getBodyAsJson().getString("iduser") + 
 				"' AND password = '" + routingContext.getBodyAsJson().getString("password") + "'", 
 				res -> {
