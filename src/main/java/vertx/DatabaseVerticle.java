@@ -27,7 +27,6 @@ public class DatabaseVerticle extends AbstractVerticle{
 	
 	
 	private MySQLPool mySQLPool;
-	private static Boolean sync = new Boolean(true);
 	private String classInstanceId;
 	private MqttClient mqttClient;
 	
