@@ -58,7 +58,7 @@ La base de datos diseñada para nuestro proyecto es relativamente simple, puesto
 
  
 
-![img](file:///C:/Users/alall/AppData/Local/Temp/msohtmlclip1/01/clip_image002.png)
+![img](https://raw.githubusercontent.com/alealclag/Doge-Power/Modificaciones-Ale/Doge-power%20Diagrama%20UML.png)
 
 Para casi todas las tablas hemos usado solo atributos básicos con el objetivo de obtener una base de datos simple y que no nos lleve una gran cantidad de tiempo trabajar con ella. Como hemos indicado anteriormente, para sensor y actuator tenemos atributos tales como el dispositivo al que pertenecen, el nombre del sensor/actuador (pressure, led, etc.) y el tipo. Con el tipo nos referimos a si es básico (sensor/actuador, valor y timestamp) o no, que en nuestro caso es únicamente el tipo Location, ya que estos sensores recogen el valor de las coordenadas en x e y.
 
