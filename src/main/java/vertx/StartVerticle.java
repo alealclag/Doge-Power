@@ -20,6 +20,5 @@ public class StartVerticle extends AbstractVerticle{
 		
 		vertx.deployVerticle(MqttServerVerticle.class.getName());
 		vertx.deployVerticle(DatabaseVerticle.class.getName());
-		//vertx.deployVerticle(MqttClientVerticle.class.getName());
 	}
 }
